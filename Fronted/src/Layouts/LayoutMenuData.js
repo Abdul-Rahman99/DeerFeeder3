@@ -201,18 +201,18 @@ const Navdata = () => {
             },
         },
         {
-      		id: "birdanalysis",
-      		label: "Birds Reports",
-      		icon: "ri-file-list-line",
-      		link: "https://mngar.ae:3003",
-      		stateVariables: isBirdAnalysis,
-      		click: function (e) {
-        	e.preventDefault();
-        	setIsBirdAnalysis(!isBirdAnalysis);
-        	setIscurrentState("Bird Analysis");
-        	updateIconSidebar(e);
-      	     },
-    	},
+         id: "birdanalysis",
+         label: "Birds Reports",
+         icon: "ri-file-list-line",
+         link: "https://mngar.ae:3003",
+         stateVariables: isBirdAnalysis,
+         click: function (e) {
+          e.preventDefault();
+          setIsBirdAnalysis(!isBirdAnalysis);
+          setIscurrentState("Bird Analysis");
+          updateIconSidebar(e);
+         },
+        },
         {
             id: "admintools",
             label: "Administration",
