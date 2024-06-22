@@ -1,0 +1,39 @@
+
+FROM node:18-alpine as react_build
+
+WORKDIR /app 
+COPY package*.json ./
+
+# COPY package.json /app/
+# COPY package-lock.json /app/
+# COPY . /app/
+# COPY node_modules /app/node_modules/
+# COPY public /app/public/
+# COPY src /app/src/
+# COPY build /app/build/
+# COPY test.html /app/build/
+RUN npm install -g npm@10.4.0
+RUN npm install --legacy-peer-deps
+COPY . ./
+# RUN cd /app
+RUN npm run build
+
+#prepare nginx
+# FROM nginx:1.16.0-alpine
+# WORKDIR /usr/share/nginx/html
+# RUN rm -rf ./*
+# COPY --from=react_build /myreactapp/build .
+# ENTRYPOINT [ "nginx","-g","daemon off;" ]
+# COPY nginx.conf /etc/nginx/conf.d
+
+
+FROM httpd:2.4
+# WORKDIR /usr/local/apache2/htdocs
+# RUN rm -rf ./*
+COPY ./myhttpd.conf /usr/local/apache2/conf/httpd.conf
+COPY --from=react_build /app/build /usr/local/apache2/htdocs/
+
+#fire up nginx
+# EXPOSE 80  
+
+# CMD ["npm","run","docker_watch"] 

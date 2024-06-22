@@ -1,0 +1,11 @@
+export {default as temp_pic} from "./Thermometer_icon.png";
+export {default as battery_pic_no} from "./battery_no.png";
+export {default as time_sunrise_c} from "./sunrise-01.png";
+export {default as time_day_c} from "./fixed-time-01.png";
+export {default as time_sunset_c} from "./sunset-01.png";
+export {default as hum_pic} from "./humidity_icon.png";
+export {default as time_sunrise} from "./sunrise.png";
+export {default as battery_pic} from "./battery.png";
+export {default as time_day} from "./fixed-time.png";
+export {default as time_sunset} from "./sunset.png";
+export {default as tankpic} from "./1.svg";
