@@ -384,10 +384,6 @@ const getBirdsDataForGraph = async (req, res) => {
         birdsData[index].speciesInfo =
           elementCam1.speciesInfo + elementCam2.speciesInfo;
       }
-    } else {
-      birdsData[index].time = elementCam1.time;
-      birdsData[index].maxCount = elementCam1.maxCount;
-      birdsData[index].speciesInfo = elementCam1.speciesInfo;
     }
   }
   console.log(birdsData);
