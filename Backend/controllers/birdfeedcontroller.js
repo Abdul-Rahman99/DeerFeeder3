@@ -256,7 +256,7 @@ const getBirdsData = async (req, res) => {
     //     // let feed_max = 0;
     //     let myArIn = {
     //         time: val.time,
-    //         date: val.date,
+    //         date: val.date,`
     //         birdscount: val.birdscount,
     //         foodconsumption: feed_max
     //     };
@@ -311,32 +311,51 @@ const getBirdsDataForGraph = async (req, res) => {
   }
   // return res.status(200).json({ "555444444444444444444":54 });
   const query = `
-        SELECT
-            ${timeRangeGroupByField} as time,
-            CONCAT(
-                '[',
-                GROUP_CONCAT(DISTINCT UPPER(json_extract(client_message, '$.species_detected'))),
-                ']'
-            ) as speciesInfo,
-            SUM(max_count) as totalMaxCount
-        FROM (
+    SELECT
+        ${timeRangeGroupByField} as time,
+        CONCAT(
+            '[',
+            GROUP_CONCAT(UPPER(json_extract(client_message, '$.species_detected'))),
+            ']'
+        ) as speciesInfo,
+        (
             SELECT
-                ${timeRangeGroupByField},
-                client_topic,
-                MAX(json_extract(client_message, '$.countBirds')) as max_count
-            FROM
-                BirdsData
-            WHERE
-                feeder_id = ${feederId} AND
-                client_topic in ('Processed2json','Processed1json') AND
-                DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
+                SUM(max_count) as totalMaxCount
+            FROM (
+                SELECT
+                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
+                    client_topic,
+                    MAX(json_extract(client_message, '$.countBirds')) as max_count
+                FROM
+                    BirdsData
+                WHERE
+                    feeder_id = ${feederId} AND
+                    client_topic IN ('Processed2json', 'Processed1json') AND
+                    createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
+                GROUP BY
+                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
+            ) as subquery
+            WHERE subquery.time = ${timeRangeGroupByField}
             GROUP BY
-                ${timeRangeGroupByField}, client_topic
-        ) as subquery
-        GROUP BY
-            time
-        ORDER BY
-            time ASC;`;
+                subquery.time
+            ORDER BY
+                subquery.time ASC
+        ) as totalMaxCount
+
+    FROM
+        BirdsData
+
+    WHERE
+        feeder_id = ${feederId} AND
+        client_topic in ('Processed1json', 'Processed2json') AND
+        DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
+
+    GROUP BY
+        time
+
+    ORDER BY
+        createdAt ASC
+`;
 
   const birdsData = await models.sequelize.query(query, {
     type: QueryTypes.SELECT,
@@ -346,7 +365,7 @@ const getBirdsDataForGraph = async (req, res) => {
 
   const birdspiedata = new Map();
   const data = new Map();
-  birdsData?.forEach(({ time, speciesInfo, maxCount }) => {
+  birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
     // append data for pie graph
     JSON.parse(speciesInfo)?.forEach((species_detected_arr) => {
       species_detected_arr?.forEach((specie) => {
@@ -357,7 +376,7 @@ const getBirdsDataForGraph = async (req, res) => {
 
     // append data for dot graph
     const formatedTime = `${time}`.includes(":") ? getTimeAMPM(time) : time;
-    data.set(formatedTime, maxCount);
+    data.set(formatedTime, totalMaxCount);
   });
 
   if (birdsData !== null) {

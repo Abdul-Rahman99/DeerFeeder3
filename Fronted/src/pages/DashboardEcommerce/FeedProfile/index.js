@@ -18,6 +18,8 @@ import { ScheduleFeed } from "./ScheduleFeed";
 import TankControl from "./TankControl";
 import { SchedulsTable } from "./ScheduleFeed/SchedulsTable";
 
+import PermissionGuard from "../../../Components/Common/PermissionGuard";
+
 import "../../../assets/scss/timer.css";
 import "../../../assets/scss/tank.css";
 import { api } from "../../../services/api";
@@ -123,15 +125,17 @@ const FeedProfile = () => {
           setSchedulesPerformed={setSchedulesPerformed}
           schedulesPerformed={schedulesPerformed}
         />
-        <ScheduleFeed
-          userId={userId}
-          showLoader={showLoader}
-          setIsExpired={setIsExpired}
-          setShowLoader={setShowLoader}
-          currentFeederId={currentFeederId}
-          setSchedulesPerformed={setSchedulesPerformed}
-          schedulesPerformed={schedulesPerformed}
-        />
+        <PermissionGuard permissionName="view-birds">
+          <ScheduleFeed
+            userId={userId}
+            showLoader={showLoader}
+            setIsExpired={setIsExpired}
+            setShowLoader={setShowLoader}
+            currentFeederId={currentFeederId}
+            setSchedulesPerformed={setSchedulesPerformed}
+            schedulesPerformed={schedulesPerformed}
+          />
+        </PermissionGuard>
         <Charts currentFeederId={currentFeederId} />
         <Row>
           <SensorStatus {...feederData} />
