@@ -167,7 +167,7 @@ const getFeedLevelData = async (req, res) => {
 
     for (let i = 0; i < records.length; i++) {
       const { id, title, location, other_info, tankLevel } = records[i];
-      await getFeedPercentage();
+      await getFeedPercentage(id);
 
       const myNewAr = {
         id,
