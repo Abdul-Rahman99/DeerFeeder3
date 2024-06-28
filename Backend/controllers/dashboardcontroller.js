@@ -1,4 +1,4 @@
-const { collectSchedules , getFeedDones} = require("../Helper");
+const { collectSchedules, getFeedDones } = require("../Helper");
 const models = require("../models");
 const { Op, QueryTypes } = require("sequelize");
 
@@ -119,13 +119,21 @@ const getFeedPercentage = async (feederId) => {
       }, Remaining feed: ${remainingFeed}, Feed level percentage: ${feedLevelPercentage}%`
     );
 
+    // let query = `UPDATE FeedingDevices
+    //           SET feed_level = ${remainingFeed}, feed_level_percentage = ${feedLevelPercentage}
+    //           WHERE FeedingDevices  .id = ${feederId};
+    //           `;
+
+    // await models.sequelize.query(query, {
+    //   type: QueryTypes.UPDATE,
+    // });
+
     return feedLevelPercentage;
   } catch (error) {
     console.error("Error fetching records:", error);
     throw error;
   }
 };
-
 
 /*
 const getFeedPercentage = async (feederId) => {
@@ -171,7 +179,9 @@ const getFeedLevelData = async (req, res) => {
       FeedingDevices.mac_address, 
       FeedingDevices.location, 
       FeedingDevices.other_info, 
-      FeedingDevices.feeder_id
+      FeedingDevices.feeder_id,
+      FeedingDevices.feed_level,
+      FeedingDevices.feed_level_percentage as tankLevel
     FROM 
       FeedingDevices 
     INNER JOIN
@@ -190,8 +200,7 @@ const getFeedLevelData = async (req, res) => {
     let AllFeedLevels = [];
 
     for (let i = 0; i < records.length; i++) {
-      const { id, title, location, other_info } = records[i];
-      const tankLevel = await getFeedPercentage(id);
+      const { id, title, location, other_info, tankLevel } = records[i];
 
       const myNewAr = {
         id,
@@ -215,10 +224,9 @@ const getFeedLevelData = async (req, res) => {
 
     res.status(200).send(newAr);
   } catch (error) {
-    res.status(500).send({ message: "Error fetching feed level data.", error });
+    res.status(500).send({ message: error.message });
   }
 };
-
 
 /*const getFeedPercentage = async (feederId) => {
   const tankCapacity = 800;
@@ -310,32 +318,31 @@ const getFeedLevelData = async (req, res) => {
   res.status(200).send(newAr);
 };*/
 //const getFeedPercentage = async(ping_dist) => {
-  // return await getFeedDones(feeder_id);
-  //let ping_dist_p = (130 - ping_dist) / (1.3)
-  //let truncated_ping_dist_p = ping_dist_p.toFixed(0).toString().slice(0, 2);    
-  // console.log(truncated_ping_dist_p);
-  //return 100 - truncated_ping_dist_p;
+// return await getFeedDones(feeder_id);
+//let ping_dist_p = (130 - ping_dist) / (1.3)
+//let truncated_ping_dist_p = ping_dist_p.toFixed(0).toString().slice(0, 2);
+// console.log(truncated_ping_dist_p);
+//return 100 - truncated_ping_dist_p;
 
-  // if (ping_dist >= 64) {
-  //   return 0;
-  // } else if (ping_dist >= 55) {
-  //   return 20;
-  // } else if (ping_dist >= 44) {
-  //   return 40;
-  // } else if (ping_dist >= 35) {
-  //   return 60;
-  // } else if (ping_dist >= 20) {
-  //   return 80;
-  // } else {
-  //   return 100;
-  // }
-  // let total_cm = 70;
-  // if (ping_dist > total_cm) {
-  //     ping_dist = 70;
-  // }
-  // return Math.round((total_cm - ping_dist) * 100 / total_cm);
+// if (ping_dist >= 64) {
+//   return 0;
+// } else if (ping_dist >= 55) {
+//   return 20;
+// } else if (ping_dist >= 44) {
+//   return 40;
+// } else if (ping_dist >= 35) {
+//   return 60;
+// } else if (ping_dist >= 20) {
+//   return 80;
+// } else {
+//   return 100;
+// }
+// let total_cm = 70;
+// if (ping_dist > total_cm) {
+//     ping_dist = 70;
+// }
+// return Math.round((total_cm - ping_dist) * 100 / total_cm);
 //};
-
 
 /*const getFeedLevelData = async (req, res) => {
     let date_now = new Date();

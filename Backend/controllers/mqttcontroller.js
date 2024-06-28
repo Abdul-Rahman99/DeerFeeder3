@@ -440,6 +440,31 @@ client.on("message", async function (topic, message) {
             models.FeedingDone.create(post).catch((error) => {
               console.log("error in creation commands" + error);
             });
+
+            // new update for tank level
+            const input = client_message;
+            const segments = input.split(",");
+            const segment = segments.find((seg) => seg.startsWith("61<"));
+            const value = segment.match(/61<([^>]*)>/)[1];
+            const milliseconds = parseInt(value, 10);
+            const seconds = milliseconds / 1000;
+            let totalFeedUsedNow = 0;
+            totalFeedUsedNow += seconds * 0.4;
+
+            let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id=${feeder_id}`;
+            models.sequelize
+              .query(query, { type: QueryTypes.SELECT })
+              .then((results) => {
+                console.log(results);
+                const newFeedLevel = results[0].feed_level - totalFeedUsedNow;
+                const newFeedLevelPercentage =
+                  (newFeedLevel / results[0].tank_capacity) * 100;
+                let updateQuery = `UPDATE FeedingDevices SET feed_level = ${newFeedLevel}, feed_level_percentage = ${newFeedLevelPercentage} WHERE id = ${results[0].id}`;
+                models.sequelize.query(updateQuery);
+              })
+              .catch((error) => {
+                console.error("Error executing query:", error);
+              });
           }
           collectNotifications(getLastElem, newAr, feeder_id);
         } else if (mainTopicHead != "Video") {
@@ -455,6 +480,58 @@ client.on("message", async function (topic, message) {
               models.ClientMessages.create(post).catch((error) => {
                 console.log("error in creation commands" + error);
               });
+
+              if (client_message.includes("ctrl_feed_now_done")) {
+                const input = client_message;
+                const segments = input.split(",");
+                const segment = segments.find((seg) => seg.startsWith("31<"));
+
+                if (segment) {
+                  const value = segment.match(/31<([^>]*)>/)[1];
+                  const milliseconds = parseInt(value, 10);
+                  const seconds = milliseconds / 1000;
+                  let totalFeedUsedNow = 0;
+                  totalFeedUsedNow += seconds * 0.4;
+                  console.log("Total Feed Used Now: " + totalFeedUsedNow);
+
+                  let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id = ${feeder_id}`;
+
+                  models.sequelize
+                    .query(query, {
+                      type: QueryTypes.SELECT,
+                      replacements: { feeder_id: feeder_id },
+                    })
+                    .then((results) => {
+                      if (results.length > 0) {
+                        const newFeedLevel =
+                          results[0].feed_level - totalFeedUsedNow;
+                        const newFeedLevelPercentage =
+                          (newFeedLevel / results[0].tank_capacity) * 100;
+
+                        let updateQuery = `UPDATE FeedingDevices SET feed_level = ${newFeedLevel}, feed_level_percentage = ${newFeedLevelPercentage} WHERE id = ${feeder_id}`;
+
+                        models.sequelize
+                          .query(updateQuery, {
+                            replacements: {
+                              newFeedLevel: newFeedLevel,
+                              newFeedLevelPercentage: newFeedLevelPercentage,
+                              id: results[0].id,
+                            },
+                          })
+                          .catch((error) => {
+                            console.error("Error updating feed level:", error);
+                          });
+                      } else {
+                        console.log("No device found with the specified ID");
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("Error executing query:", error);
+                    });
+                } else {
+                  console.log("No segment found for key 61");
+                }
+              }
             } catch (err) {}
           }
         }

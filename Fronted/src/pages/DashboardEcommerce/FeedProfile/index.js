@@ -125,7 +125,7 @@ const FeedProfile = () => {
           setSchedulesPerformed={setSchedulesPerformed}
           schedulesPerformed={schedulesPerformed}
         />
-        <PermissionGuard permissionName="view-birds">
+        <PermissionGuard permissionName={"/view-birds"}>
           <ScheduleFeed
             userId={userId}
             showLoader={showLoader}

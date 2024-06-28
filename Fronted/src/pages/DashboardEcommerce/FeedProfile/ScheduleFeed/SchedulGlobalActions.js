@@ -84,7 +84,6 @@ export const SchedulGlobalActions = ({
     setSchedulesActive((prevState) => !prevState);
   };
 
-
   return (
     <Row>
       <Col lg={9} style={{ display: "flex", alignItems: "center" }}>
