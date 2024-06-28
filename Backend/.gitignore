@@ -9,12 +9,13 @@
 /coverage
 
 # production
-#/config
+/config
 /build
 /public
 uploads/*
 !uploads/.gitignore
-
+.env
+/socket
 # misc
 .DS_Store
 .env.local
