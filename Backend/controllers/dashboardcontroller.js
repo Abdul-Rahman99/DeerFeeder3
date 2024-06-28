@@ -121,7 +121,7 @@ const getFeedPercentage = async (feederId) => {
 
     let query = `UPDATE FeedingDevices
               SET feed_level = ${remainingFeed}, feed_level_percentage = ${feedLevelPercentage}
-              WHERE FeedingDevices  .id = ${feederId};
+              WHERE FeedingDevices.id = ${feederId};
               `;
 
     await models.sequelize.query(query, {
@@ -134,7 +134,6 @@ const getFeedPercentage = async (feederId) => {
     throw error;
   }
 };
-
 
 const getFeedLevelData = async (req, res) => {
   const loggedInUserId = req.session?.user?.id;
@@ -167,7 +166,7 @@ const getFeedLevelData = async (req, res) => {
     let AllFeedLevels = [];
 
     for (let i = 0; i < records.length; i++) {
-      const { id, title, location, other_info, tankLevel } = records[i];  
+      const { id, title, location, other_info, tankLevel } = records[i];
       await getFeedPercentage();
 
       const myNewAr = {
