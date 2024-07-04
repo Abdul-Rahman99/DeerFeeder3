@@ -9,7 +9,8 @@ const {
     getFeedLocations,
     getSchedulesSummary,
     getAllNotifications,
-    getFeedDateTimes
+    getFeedDateTimes,
+    refillTank
 } = require('../controllers/dashboardcontroller')
 const {
     getSensorData,
@@ -202,4 +203,7 @@ router.get("/api/TestAPI", TestAPI);
 
 router.get("/api/getcsv/:reqData", getCsv)
 router.get("/api/getExportedData/:feederId/:date/:sfilter?", getExportedData);
+
+router.post("/api/refill-tank/:feederId", refillTank);
+
 module.exports = router

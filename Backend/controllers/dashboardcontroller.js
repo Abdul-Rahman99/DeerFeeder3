@@ -1,6 +1,14 @@
+const { Json } = require("sequelize/lib/utils");
 const { collectSchedules, getFeedDones } = require("../Helper");
 const models = require("../models");
-const { Op, QueryTypes } = require("sequelize");
+const {
+  Op,
+  QueryTypes,
+  where,
+  sequelize,
+  INTEGER,
+  query,
+} = require("sequelize");
 
 const getBirdFeedingDevices = (req, res) => {};
 
@@ -328,10 +336,44 @@ const getFeedDateTimes = async (req, res) => {
   }
 };
 
+const refillTank = async (req, res) => {
+  const feederId = req.params.feederId;
+
+  try {
+    const devices = await models.FeedingDevices.findAll({
+      attributes: ["tank_capacity"],
+      where: { id: feederId },
+      raw: true,
+    });
+    const tank_capacity = JSON.stringify(devices[0].tank_capacity);
+    const tank_cap_num = Number(tank_capacity);
+
+    const updatedRows = await models.FeedingDevices.update(
+      {
+        feed_level: tank_cap_num,
+        feed_level_percentage: 100,
+      },
+      {
+        where: { id: feederId },
+      }
+    );
+
+    if (updatedRows > 0) {
+      res.status(200).send({ message: "Tank refilled successfully" });
+    } else {
+      res.status(404).send({ message: "Feeding device not found" });
+    }
+  } catch (error) {
+    console.error("Error refilling tank:", error);
+    res.status(500).send({ message: error.message });
+  }
+};
+
 module.exports = {
   getFeedLevelData,
   getFeedLocations,
   getSchedulesSummary,
   getAllNotifications,
   getFeedDateTimes,
+  refillTank,
 };

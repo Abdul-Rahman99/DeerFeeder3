@@ -35,6 +35,7 @@ const FeedProfile = () => {
   const [schedulesPerformed, setSchedulesPerformed] = useState(0);
   const [feedLevel, setFeedLevel] = useState(100);
   const [feedUsed, setFeedUsed] = useState(0);
+  const [feederId, setFeederId] = useState("");
 
   const { camPic, camPic2, updateCameras } = useCameras(currentFeederId);
   const { weatherInfo, deviceDetail, getDeviceDetails } =
@@ -44,11 +45,6 @@ const FeedProfile = () => {
 
   const handleSchedulePerformed = (schedulesPerformed) => {
     setSchedulesPerformed(schedulesPerformed + 1);
-  };
-
-  const handleRefill = () => {
-    setFeedLevel(100);
-    setSchedulesPerformed(0);
   };
 
   useEffect(() => {
@@ -64,6 +60,7 @@ const FeedProfile = () => {
           // setSchedulesPerformed(0);
           setFeedLevel(feedLevelData.tankLevel);
           setFeedUsed((feedLevelData.tankLevel * 800) / 100);
+          setFeederId(feedLevelData.id);
         }
       } catch (error) {
         console.error("Error fetching feed level data:", error);
@@ -72,6 +69,22 @@ const FeedProfile = () => {
     fetchFeedLevelData();
   }, [currentFeederId]);
 
+  const handleRefill = async (currentFeederId) => {
+    try {
+      const currentFeederId = feederId;
+      const response = await api.post(`/refill-tank/${currentFeederId}`);
+
+      // const data = await response.json();
+      if (response.ok) {
+        alert("Tank refilled successfully");
+      } else {
+        // alert(`Error: ${message}`);
+      }
+    } catch (error) {
+      console.error("Error refilling tank:", error);
+      alert("An error occurred while refilling the tank. Please try again.");
+    }
+  };
   const {
     handleFeederUpdate,
     getFeedsTimings,
@@ -101,16 +114,18 @@ const FeedProfile = () => {
       <Container fluid>
         <EnvInfo weatherInfo={weatherInfo} deviceDetail={deviceDetail} />
         <Cameras camPic={camPic} camPic2={camPic2} />
-        <TankControl
-          tankCapacity={tankCapacity}
-          setTankCapacity={setTankCapacity}
-          feedPerSecond={feedPerSecond}
-          handleRefill={handleRefill}
-          feedLevel={feedLevel}
-          handleSchedulePerformed={handleSchedulePerformed}
-          feedUsed={feedUsed}
-          currentFeederId={currentFeederId}
-        />
+        <PermissionGuard permissionName={"/manage-tank"}>
+          <TankControl
+            tankCapacity={tankCapacity}
+            setTankCapacity={setTankCapacity}
+            feedPerSecond={feedPerSecond}
+            handleRefill={handleRefill}
+            feedLevel={feedLevel}
+            handleSchedulePerformed={handleSchedulePerformed}
+            feedUsed={feedUsed}
+            currentFeederId={currentFeederId}
+          />
+        </PermissionGuard>
         <FeedInfo
           lastTime={lastTime}
           lastDate={lastDate}
