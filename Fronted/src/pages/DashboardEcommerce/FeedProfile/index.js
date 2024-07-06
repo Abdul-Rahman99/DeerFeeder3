@@ -114,18 +114,17 @@ const FeedProfile = () => {
       <Container fluid>
         <EnvInfo weatherInfo={weatherInfo} deviceDetail={deviceDetail} />
         <Cameras camPic={camPic} camPic2={camPic2} />
-        <PermissionGuard permissionName={"/manage-tank"}>
-          <TankControl
-            tankCapacity={tankCapacity}
-            setTankCapacity={setTankCapacity}
-            feedPerSecond={feedPerSecond}
-            handleRefill={handleRefill}
-            feedLevel={feedLevel}
-            handleSchedulePerformed={handleSchedulePerformed}
-            feedUsed={feedUsed}
-            currentFeederId={currentFeederId}
-          />
-        </PermissionGuard>
+
+        <TankControl
+          tankCapacity={tankCapacity}
+          setTankCapacity={setTankCapacity}
+          feedPerSecond={feedPerSecond}
+          handleRefill={handleRefill}
+          feedLevel={feedLevel}
+          handleSchedulePerformed={handleSchedulePerformed}
+          feedUsed={feedUsed}
+          currentFeederId={currentFeederId}
+        />
         <FeedInfo
           lastTime={lastTime}
           lastDate={lastDate}

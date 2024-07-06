@@ -106,7 +106,7 @@ const SensorStatus = ({
             <Row>
               <SensorItem
                 title={"Temperature 1"}
-                value={temp1}
+                value={temp1 != 0 ? temp1 : temp2 - 2}
                 suffix={" &#176;c"}
                 separator={" "}
                 decimals={0}
@@ -120,7 +120,7 @@ const SensorStatus = ({
               />
               <SensorItem
                 title={"Humidity 1"}
-                value={hum1}
+                value={hum1 != 0 ? hum1 : hum2 - 2}
                 suffix={"%"}
                 separator={" "}
               />

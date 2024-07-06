@@ -21,7 +21,7 @@ export const FeedInfo = ({
   setSchedulesPerformed,
   schedulesPerformed,
 }) => {
-  const { btyVolt, btyCur, temp1, hum1 } = feederData;
+  const { btyVolt, btyCur, temp1, hum1, temp2, hum2 } = feederData;
 
   const feederInfo = useMemo(() => {
     const showBatteryLevel = (batteryVolt) => {
@@ -35,16 +35,17 @@ export const FeedInfo = ({
         return "100%";
       }
     };
-
+    let temp = temp1 != 0 ? Math.floor(temp1) : temp2 - 2;
+    let hum = hum1 != 0 ? Math.floor(hum1) : hum2 - 2;
     return [
       {
         title: "Feeder Temperature",
-        value: <>{Math.floor(temp1)} &deg;c</>,
+        value: <>{temp} &deg;c</>,
         image: <img src={temp_pic} width="40" height="40" />,
       },
       {
         title: "Feeder Humidity",
-        value: `${Math.floor(hum1)} %`,
+        value: `${Math.floor(hum)} %`,
         image: <img src={hum_pic} width="40" height="40" />,
       },
       {
@@ -65,7 +66,6 @@ export const FeedInfo = ({
   //     const tankCapacityRemaining = (feedPerSecond / 1000) * schedulesActive;
   //     return ((tankCapacity - tankCapacityRemaining) / tankCapacity) * 100;
   //   }, [tankCapacity, feedPerSecond, schedulesActive]);
-
 
   return (
     <Row>

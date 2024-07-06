@@ -13,6 +13,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "reactstrap";
+import PermissionGuard from "../../../Components/Common/PermissionGuard";
 
 const TankControl = ({
   tankCapacity,
@@ -66,20 +67,22 @@ const TankControl = ({
         title: "Tank Capacity",
         value: <>{Math.floor(Math.max(0, tankCapacity))} (Kgs)</>,
       },
-      {
-        title: "Refill Tank",
-        value: (
-          <>
-            <Button
-              color="primary"
-              className="me-2"
-              onClick={() => setIsRefillModalOpen(true)}
-            >
-              Refill Feeder tank to 100%
-            </Button>
-          </>
-        ),
-      },
+      // {
+      //   title: "Refill Tank",
+      //   value: (
+      //     <>
+      //       <PermissionGuard permissionName={"/manage-tank"}>
+      //         <Button
+      //           color="primary"
+      //           className="me-2"
+      //           onClick={() => setIsRefillModalOpen(true)}
+      //         >
+      //           Refill Feeder tank to 100%
+      //         </Button>
+      //       </PermissionGuard>
+      //     </>
+      //   ),
+      // },
     ];
   }, [tankCapacity, feedUsed]);
 
@@ -123,7 +126,7 @@ const TankControl = ({
         </Col> */}
 
         {feederInfo.map(({ title, value }) => (
-          <Col key={title} lg={4} xl={4} md={4} className="mb-4">
+          <Col key={title} lg={6} xl={6} md={6} className="mb-4">
             <Card style={{ minHeight: "170px", height: "170px" }}>
               <CardHeader>
                 <h5 className="card-title mb-0">{title}</h5>
