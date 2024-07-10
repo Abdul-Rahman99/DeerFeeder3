@@ -23,6 +23,8 @@ import PermissionGuard from "../../../Components/Common/PermissionGuard";
 import "../../../assets/scss/timer.css";
 import "../../../assets/scss/tank.css";
 import { api } from "../../../services/api";
+import { updateScheduleStopStatusApi } from "../../../services/feedProfile.services";
+import { toast } from "react-toastify";
 
 const FeedProfile = () => {
   const [showLoader, setShowLoader] = useState(false);
@@ -41,12 +43,12 @@ const FeedProfile = () => {
   const { weatherInfo, deviceDetail, getDeviceDetails } =
     useEnvInfo(currentFeederId);
 
-  const [schedulesActive, setSchedulesActive] = useState(false);
+  const [schedulesActive, setSchedulesActive] = useState('n');
 
   const handleSchedulePerformed = (schedulesPerformed) => {
     setSchedulesPerformed(schedulesPerformed + 1);
   };
-
+  console.log("HEEEEE " + schedulesActive);
   useEffect(() => {
     const fetchFeedLevelData = async () => {
       try {
@@ -68,6 +70,26 @@ const FeedProfile = () => {
     };
     fetchFeedLevelData();
   }, [currentFeederId]);
+  console.log("USER" + userId);
+  useEffect(() => {
+    if (!schedulesActive) {
+      updateScheduleStopStatusApi(userId, currentFeederId, {
+        is_started: schedulesActive,
+      })
+        .then((res) => {
+          toast("Motor stop setting updated successfully", {
+            position: "top-right",
+            hideProgressBar: true,
+            closeOnClick: false,
+            className: "bg-success text-white",
+          });
+          //  setShowstopLoader(false);
+        })
+        .catch((err) => {
+          //  setShowstopLoader(false);
+        });
+    }
+  }, [schedulesActive, userId, currentFeederId]);
 
   const handleRefill = async (currentFeederId) => {
     try {
@@ -133,7 +155,6 @@ const FeedProfile = () => {
           tankCapacity={tankCapacity}
           currentFeederId={currentFeederId}
           feedPerSecond={feedPerSecond}
-          schedulesActive={schedulesActive}
           handleSchedulePerformed={handleSchedulePerformed}
           feedLevel={feedLevel}
           setSchedulesPerformed={setSchedulesPerformed}
@@ -148,6 +169,10 @@ const FeedProfile = () => {
             currentFeederId={currentFeederId}
             setSchedulesPerformed={setSchedulesPerformed}
             schedulesPerformed={schedulesPerformed}
+            schedulesActive={schedulesActive}
+            ongetSchedule={(val) => {
+              setSchedulesActive(val);
+            }}
           />
         </PermissionGuard>
         <Charts currentFeederId={currentFeederId} />

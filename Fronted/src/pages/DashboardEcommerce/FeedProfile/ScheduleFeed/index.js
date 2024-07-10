@@ -1,10 +1,12 @@
 import { Col, Row, Card, CardBody, CardHeader } from "reactstrap";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { SchedulGlobalActions } from "./SchedulGlobalActions";
 import { useScheduleFeed } from "./hooks/useScheduleFeed";
 import { SchedulsTable } from "./SchedulsTable";
 import { ScheduleModal } from "./ScheduleModal";
+import { updateScheduleStopStatusApi } from "../../../../services/feedProfile.services";
+import { toast } from "react-toastify";
 
 export const ScheduleFeed = ({
   currentFeederId,
@@ -14,7 +16,7 @@ export const ScheduleFeed = ({
   userId,
   handleSchedulePerformed,
   setSchedulesPerformed,
-  schedulesPerformed
+  schedulesPerformed,
 }) => {
   const {
     mySchedules,
@@ -33,7 +35,29 @@ export const ScheduleFeed = ({
     getFeederStopStatus,
   } = useScheduleFeed({ currentFeederId, setIsExpired });
 
-  const [schedulesActive, setSchedulesActive] = useState(true);
+  const [schedulesActive, setSchedulesActive] = useState("n");
+
+    useEffect(() => {
+      if (!schedulesActive) {
+        updateScheduleStopStatusApi(userId, currentFeederId, {
+          is_started: schedulesActive,
+        })
+          .then((res) => {
+            toast("Motor stop setting updated successfully", {
+              position: "top-right",
+              hideProgressBar: true,
+              closeOnClick: false,
+              className: "bg-success text-white",
+            });
+            //  setShowstopLoader(false);
+          })
+          .catch((err) => {
+            //  setShowstopLoader(false);
+          });
+      }
+    }, [schedulesActive, userId, currentFeederId]);
+
+
 
   return (
     <React.Fragment>
@@ -86,6 +110,9 @@ export const ScheduleFeed = ({
                 schedulesActive={schedulesActive}
                 setSchedulesActive={setSchedulesActive}
                 handleSchedulePerformed={handleSchedulePerformed}
+                ongetSchedule={(val) => {
+                  setSchedulesActive(val);
+                }}
               />
             </CardBody>
           </Card>

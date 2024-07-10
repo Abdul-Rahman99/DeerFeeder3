@@ -10,16 +10,12 @@ import {
 } from "../../../assets/images";
 
 export const FeedInfo = ({
-  tankCapacity,
-  feedPerSecond,
   currentFeederId,
   feederData,
   isExpired,
   lastDate,
   lastTime,
   feedLevel,
-  setSchedulesPerformed,
-  schedulesPerformed,
 }) => {
   const { btyVolt, btyCur, temp1, hum1, temp2, hum2 } = feederData;
 

@@ -24,13 +24,15 @@ export const SchedulsTable = ({
   setSchedulesActive,
   setSchedulesPerformed,
   schedulesPerformed,
+  ongetSchedule,
 }) => {
   useEffect(() => {
     if (mySchedules && mySchedules.length > 0) {
       const anyActive = mySchedules.some((schedule) => schedule.is_enabled);
       setSchedulesActive(anyActive);
+      ongetSchedule && ongetSchedule(anyActive);
     }
-  }, [mySchedules, setSchedulesActive]);
+  }, [mySchedules, setSchedulesActive, ongetSchedule]);
 
   const updateFields = (id, { feed_time_type, feed_day, ...fields }) =>
     setScheduleData({
@@ -168,6 +170,13 @@ export const SchedulsTable = ({
                         type="checkbox"
                         onChange={async (e) => {
                           await updateSchedule(val.id, e.target.checked);
+                          // ongetSchedule &&
+                          //   ongetSchedule(
+                          //     mySchedules.some(
+                          //       (schedule) =>
+                          //         schedule.id !== val.id && schedule.is_enabled
+                          //     ) || e.target.checked
+                          //   );
                           setSchedulesActive(
                             mySchedules.some(
                               (schedule) =>
