@@ -34,6 +34,9 @@ const addDevice = async (req, res) => {
       ip_address,
       longitude,
       latitude,
+      feed_level,
+      feed_level_percentage,
+      tank_capacity,
     } = req.body;
 
     const other_info = JSON.stringify({
@@ -67,6 +70,9 @@ const addDevice = async (req, res) => {
         location,
         ip_address,
         other_info,
+        feed_level: 800,
+        feed_level_percentage: 100,
+        tank_capacity: 800,
       });
     } else {
       feedDevice = await models.FeedingDevices.update(
@@ -78,6 +84,9 @@ const addDevice = async (req, res) => {
           location,
           ip_address,
           other_info,
+          feed_level,
+          feed_level_percentage,
+          tank_capacity,
         },
         { where: { id: id } }
       );
