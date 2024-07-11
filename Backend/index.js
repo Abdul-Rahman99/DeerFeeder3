@@ -25,7 +25,7 @@ app.use(
       "https://mngar.ae:8080",
       "https://www.mngar.ae:8080",
       "https://mngar.ae",
-      "http://localhost:7000",
+      "http://localhost:3000",
     ],
     credentials: true,
     optionsSuccessStatus: 200,

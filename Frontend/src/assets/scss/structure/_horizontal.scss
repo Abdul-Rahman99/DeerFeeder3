@@ -156,6 +156,7 @@
 
                 @media (min-width: 1024.1px) {
                     >.menu-dropdown {
+                        background-color: white;
                         display: block;
                         height: auto !important;
                     }
@@ -185,12 +186,14 @@
         display: none;
 
         .menu-dropdown {
+            background-color: white;
             top: 0;
             left: 100%;
         }
     }
 
     .mega-dropdown-menu {
+        background-color: white ;
         width: 40rem;
     }
 
@@ -233,6 +236,7 @@
             }
 
             .menu-dropdown {
+                background-color: white;
                 position: relative;
                 min-width: 100%;
                 box-shadow: none;
@@ -251,10 +255,12 @@
             }
 
             .nav-item .nav-link[data-bs-toggle=collapse]:after {
+                background-color: white;
                 right: 0px;
             }
 
             .mega-dropdown-menu {
+                background-color: white;
                 width: 100%;
             }
         }

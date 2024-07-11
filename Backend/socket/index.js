@@ -18,6 +18,7 @@ const io = require("socket.io")(process.env.SOCKET_PORT, {
       //"https://www.mngar.ae",
       //'http://192.168.1.131:8080',
       "http://localhost:3000",
+      "http://localhost:7000",
       //"http://gaztec.ddns.net:8080",
       //"http://92.98.78.202:8080",
       "http://192.168.1.7:1883",

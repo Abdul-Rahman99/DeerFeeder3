@@ -379,10 +379,13 @@ const getBirdsDataForGraph = async (req, res) => {
     // Append data for pie graph
     JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
       Object.entries(all_objs_dict).forEach(([key, count]) => {
-        const specieCount = birdspiedata.get(key) || 0;
-        birdspiedata.set(key, specieCount + count);
+        if (key !== "NOT_BIRD") {
+          const specieCount = birdspiedata.get(key) || 0;
+          birdspiedata.set(key, specieCount + count);
+        }
       });
     });
+
     // append data for dot graph
     const formatedTime = `${time}`.includes(":") ? getTimeAMPM(time) : time;
     data.set(formatedTime, totalMaxCount);
