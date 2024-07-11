@@ -1,0 +1,81 @@
+        @font-face {
+            font-family: newFont;
+            src: url(OCRAStd.otf);
+        }
+
+        .last-feed {
+            background-color: #3A4C64 !important;
+        }
+
+        .last-feed h2 {
+            /* font-size: 73px; */
+            font-size: 30px;
+            letter-spacing: 12px;
+            font-family: newFont;
+        }
+
+        .gmt {
+            background-color: #CEA93F;
+            height: 20px;
+        }
+
+
+        @media only screen and (min-width: 1066px) {
+
+            .last-feed h2 {
+                font-size: 30px;
+            }
+        }
+
+
+
+        @font-face {
+            font-family: newFont2;
+            src: url(digital-7.ttf);
+        }
+
+        .next-feed {
+            background-color: #CB1E18 !important;
+            height: 91% !important;
+        }
+
+        #countDown {
+            font-size: 40px;
+            font-family: newFont2;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .countdown-item {
+            display: inline-block;
+            /* padding-bottom: 5px; */
+            /* margin-right: 20px;  */
+            position: relative;
+        }
+
+        .countdown-item:nth-child(2),
+        .countdown-item:nth-child(4),
+        .countdown-item:nth-child(6) {
+            margin-right: 40px;
+        }
+
+        .countdown-label {
+            border-top: 3px dotted white;
+            color: white;
+            font-size: 12px;
+            font-family: normal;
+            padding-top: 5px;
+            text-align: center;
+        }
+
+        #countDown {
+            position: relative;
+        }
+
+        .mystylesuccess {
+            border: 1px solid darkcyan;
+        }
+
+        .mystyleerror {
+            border: 1px solid #CB1E18;
+        }

@@ -1,0 +1,189 @@
+import { Container, Row } from "reactstrap";
+import React, { useState, useEffect } from "react";
+
+import {
+  useFeeder,
+  useSocket,
+  useEnvInfo,
+  useCameras,
+  useFeedProfileMainInfo,
+} from "./hooks";
+import { Charts } from "./Charts";
+import { EnvInfo } from "./EnvInfo";
+import { Cameras } from "./Cameras";
+import { FeedInfo } from "./FeedInfo";
+import SensorStatus from "../SensorStatus";
+import { ScheduleFeed } from "./ScheduleFeed";
+import TankControl from "./TankControl";
+import { SchedulsTable } from "./ScheduleFeed/SchedulsTable";
+
+import "../../../assets/scss/timer.css";
+import "../../../assets/scss/tank.css";
+
+const FeedProfile = () => {
+  const [showLoader, setShowLoader] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+
+  const { userId, currentFeederId } = useFeedProfileMainInfo();
+
+  const getStoredValue = (key, defaultValue) => {
+    const storedValue = localStorage.getItem(`${currentFeederId}-${key}`);
+    return storedValue ? JSON.parse(storedValue) : defaultValue;
+  };
+
+  const [tankCapacity, setTankCapacity] = useState(() =>
+    getStoredValue("tankCapacity", 800)
+  );
+  const [feedPerSecond] = useState(0.4); // 0.4 kg per second, 0.8 kg for 2 seconds
+  const [schedulesPerformed, setSchedulesPerformed] = useState(() =>
+    getStoredValue("schedulesPerformed", 0)
+  );
+  const [feedLevel, setFeedLevel] = useState(() =>
+    getStoredValue("feedLevel", 100)
+  );
+  const [feedUsed, setFeedUsed] = useState(() => getStoredValue("feedUsed", 0));
+
+  const { camPic, camPic2, updateCameras } = useCameras(currentFeederId);
+  const { weatherInfo, deviceDetail, getDeviceDetails } =
+    useEnvInfo(currentFeederId);
+
+  const [schedulesActive, setSchedulesActive] = useState(false);
+
+  const handleSchedulePerformed = (schedulesPerformed) => {
+    setSchedulesPerformed(schedulesPerformed + 1);
+  };
+
+  const handleRefill = () => {
+    setFeedLevel(100);
+    setSchedulesPerformed(0);
+  };
+
+  useEffect(() => {
+    const feedUsed = schedulesPerformed * 0.8;
+    const adjustedFeedUsed = Math.max(0, feedUsed);
+    const feedLevelPercentage =
+      ((tankCapacity - adjustedFeedUsed) / tankCapacity) * 100;
+    setFeedLevel(feedLevelPercentage);
+    setFeedUsed(tankCapacity - adjustedFeedUsed);
+  }, [schedulesPerformed, tankCapacity, feedLevel]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      `${currentFeederId}-tankCapacity`,
+      JSON.stringify(tankCapacity)
+    );
+    localStorage.setItem(
+      `${currentFeederId}-schedulesPerformed`,
+      JSON.stringify(schedulesPerformed)
+    );
+    localStorage.setItem(
+      `${currentFeederId}-feedLevel`,
+      JSON.stringify(feedLevel)
+    );
+    localStorage.setItem(
+      `${currentFeederId}-feedUsed`,
+      JSON.stringify(feedUsed)
+    );
+    if (feedLevel < 30) {
+      const count =
+        parseInt(localStorage.getItem("feedLevelBelow30Count") || 0, 10) + 1;
+      localStorage.setItem("feedLevelBelow30Count", count);
+    } else if (feedLevel >= 60) {
+      let count =
+        parseInt(localStorage.getItem("feedLevelBelow30Count") || 0, 10) - 1;
+      count = Math.max(count, 0);
+      localStorage.setItem("feedLevelBelow30Count", count);
+    } else {
+      let count = 0;
+    }
+  }, [currentFeederId, tankCapacity, schedulesPerformed, feedLevel, feedUsed]);
+
+  const {
+    handleFeederUpdate,
+    getFeedsTimings,
+    getSensorData,
+    feederData,
+    lastDate,
+    lastTime,
+  } = useFeeder({
+    currentFeederId,
+    setShowLoader,
+    showLoader,
+    tankCapacity,
+    schedulesPerformed,
+    setSchedulesPerformed,
+  });
+
+  useSocket({
+    updateCameras,
+    getSensorData,
+    getFeedsTimings,
+    getDeviceDetails,
+    handleFeederUpdate,
+  });
+
+  return (
+    <div className="page-content">
+      <Container fluid>
+        <EnvInfo weatherInfo={weatherInfo} deviceDetail={deviceDetail} />
+        <Cameras camPic={camPic} camPic2={camPic2} />
+        <TankControl
+          tankCapacity={tankCapacity}
+          setTankCapacity={setTankCapacity}
+          feedPerSecond={feedPerSecond}
+          handleRefill={handleRefill}
+          feedLevel={feedLevel}
+          handleSchedulePerformed={handleSchedulePerformed}
+          feedUsed={feedUsed}
+          currentFeederId={currentFeederId}
+        />
+        <FeedInfo
+          lastTime={lastTime}
+          lastDate={lastDate}
+          isExpired={isExpired}
+          feederData={feederData}
+          tankCapacity={tankCapacity}
+          currentFeederId={currentFeederId}
+          feedPerSecond={feedPerSecond}
+          schedulesActive={schedulesActive}
+          handleSchedulePerformed={handleSchedulePerformed}
+          feedLevel={feedLevel}
+          setSchedulesPerformed={setSchedulesPerformed}
+          schedulesPerformed={schedulesPerformed}
+        />
+        <ScheduleFeed
+          userId={userId}
+          showLoader={showLoader}
+          setIsExpired={setIsExpired}
+          setShowLoader={setShowLoader}
+          currentFeederId={currentFeederId}
+          setSchedulesPerformed={setSchedulesPerformed}
+          schedulesPerformed={schedulesPerformed}
+        />
+        <Charts currentFeederId={currentFeederId} />
+        <Row>
+          <SensorStatus {...feederData} />
+        </Row>
+        <SchedulsTable
+          resetScheduleTimer={() => {}}
+          resetFeedTimerHTML={() => {}}
+          setScheduleArray={() => {}}
+          scheduledRowInd={0}
+          currentFeederId={currentFeederId}
+          setScheduleData={() => {}}
+          getSchedules={() => {}}
+          tog_backdrop={() => {}}
+          mySchedules={[]}
+          stopStatus={false}
+          userId={userId}
+          schedulesActive={false}
+          setSchedulesActive={() => {}}
+          setSchedulesPerformed={setSchedulesPerformed}
+          schedulesPerformed={schedulesPerformed}
+        />
+      </Container>
+    </div>
+  );
+};
+
+export default FeedProfile;
