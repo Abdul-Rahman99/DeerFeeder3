@@ -248,7 +248,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: "developer@dccme.ai",
       to: userEmail,
-      subject: "Password Reset Request for Mngar.ae",
+      subject: "Password Reset Request for Deer.ae",
       html: emailTemplate,
     };
 
@@ -304,7 +304,7 @@ const resetPassword = async (req, res) => {
           user_id: user_id,
         },
       });
-res.status(200).json({
+      res.status(200).json({
         status: true,
         message: "Password reset success",
       });

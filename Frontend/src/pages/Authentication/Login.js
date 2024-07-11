@@ -110,7 +110,7 @@ const Login = (props) => {
 
 
 
-    document.title = "SignIn | Bird Feeding";
+    document.title = "SignIn | Deer Feeding";
     return (
         <React.Fragment>
             <ParticlesAuth>

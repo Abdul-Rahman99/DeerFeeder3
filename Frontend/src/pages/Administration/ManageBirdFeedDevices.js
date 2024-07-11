@@ -225,7 +225,7 @@ const ManageBirdFeedDevices = () => {
             tog_backdrop();
           }}
         >
-          {isNew ? "Add" : "Update"} Bird Feeder
+          {isNew ? "Add" : "Update"} Deer Feeder
         </ModalHeader>
         <ModalBody className="p-3">
           <Row className="mt-2">

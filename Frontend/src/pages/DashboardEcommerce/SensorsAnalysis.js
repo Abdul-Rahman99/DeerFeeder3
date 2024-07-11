@@ -429,7 +429,7 @@ const DashboardEcommerce = (props) => {
                                     <Col xl={6} style={{ marginBottom: "20px" }}>
                                         <Card className="myCards">
                                             <CardHeader>
-                                                <h5 className="card-title mb-0">Bird Feeder Tank Level</h5>
+                                                <h5 className="card-title mb-0">Deer Feeder Tank Level</h5>
                                             </CardHeader>
                                             <CardBody>
                                                 <div className="d-flex align-items-center justify-content-center mt-1 ">

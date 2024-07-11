@@ -17,7 +17,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
 //import images 
-import logoLight from "../../assets/images/bird-feed.png";
+import logoLight from "../../assets/images/pngwing.com.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import { createSelector } from "reselect";
 
@@ -87,7 +87,7 @@ const Register = () => {
 
     }, [dispatch, success, error, history]);
 
-    document.title = "SignUp | Bird Feeding";
+    document.title = "SignUp | Deer Feeding";
 
     return (
         <React.Fragment>

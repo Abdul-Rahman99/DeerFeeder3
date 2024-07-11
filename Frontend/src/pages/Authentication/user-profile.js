@@ -242,7 +242,7 @@ const UserProfile = () => {
 
 
 
-  document.title = "Profile | Bird Feeder";
+  document.title = "Profile | Deer Feeder";
   return (
     <React.Fragment>
       <ToastContainer />

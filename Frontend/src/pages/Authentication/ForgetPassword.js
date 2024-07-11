@@ -16,7 +16,7 @@ import { userForgetPassword } from "../../store/actions";
 
 // import images
 // import profile from "../../assets/images/bg.png";
-import logoLight from "../../assets/images/bird-feed.png";
+import logoLight from "../../assets/images/pngwing.com.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import withRouter from "../../Components/Common/withRouter";
 import { createSelector } from "reselect";

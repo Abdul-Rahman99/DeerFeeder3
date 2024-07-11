@@ -15,7 +15,7 @@ import { useFormik } from "formik";
 import { apiError, userResetPassword, socialLogin, resetLoginFlag } from "../../store/actions";
 
 
-import logoLight from "../../assets/images/bird-feed.png";
+import logoLight from "../../assets/images/pngwing.com.png";
 
 import withRouter from '../../Components/Common/withRouter';
 import { createSelector } from 'reselect';
@@ -95,7 +95,7 @@ const ResetPassword = (props) => {
     }, [dispatch, error]);
 
 
-    document.title = "SignIn | Bird Feeding";
+    document.title = "SignIn | Deer Feeding";
     return (
         <React.Fragment>
             <ParticlesAuth>

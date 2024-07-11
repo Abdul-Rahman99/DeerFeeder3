@@ -455,7 +455,7 @@ const SortingTable = ({ pingDist, myData }) => {
         filterable: true,
       },
       {
-        Header: "Bird Count Avg P/D",
+        Header: "Deer Count Avg P/D",
         accessor: "birdscount",
         disableFilters: true,
         filterable: true,

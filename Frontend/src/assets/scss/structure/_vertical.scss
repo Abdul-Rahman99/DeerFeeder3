@@ -111,7 +111,8 @@
 
           &:after {
             transform: rotate(90deg);
-            color: var(--#{$prefix}vertical-menu-item-active-color);
+            // color: var(--#{$prefix}vertical-menu-item-active-color);
+            color: black !important;
           }
 
           &:before {
@@ -124,6 +125,7 @@
       &.collapsed {
         &.active {
           &::after {
+            color: black !important;
             transform: rotate(90deg);
           }
         }

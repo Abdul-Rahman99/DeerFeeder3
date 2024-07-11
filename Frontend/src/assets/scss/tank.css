@@ -124,11 +124,11 @@
 }
 
 .navbar-menu .navbar-nav .nav-link[data-bs-toggle="collapse"]:after {
-  color: #ffffff !important;
+  color: #000 !important;
 }
 
 .navbar-menu .navbar-nav .nav-sm .nav-link {
-  color: #ffffff !important;
+  color: #000 !important;
 }
 
 .menu-title {

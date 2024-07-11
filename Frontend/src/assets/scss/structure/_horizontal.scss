@@ -186,14 +186,14 @@
         display: none;
 
         .menu-dropdown {
-            background-color: white;
+            background-color: gray;
             top: 0;
             left: 100%;
         }
     }
 
     .mega-dropdown-menu {
-        background-color: white ;
+        background-color: gray ;
         width: 40rem;
     }
 
@@ -236,7 +236,7 @@
             }
 
             .menu-dropdown {
-                background-color: white;
+                background-color: gray;
                 position: relative;
                 min-width: 100%;
                 box-shadow: none;
@@ -260,7 +260,7 @@
             }
 
             .mega-dropdown-menu {
-                background-color: white;
+                background-color: gray;
                 width: 100%;
             }
         }
