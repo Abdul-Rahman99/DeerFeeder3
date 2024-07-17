@@ -449,13 +449,13 @@ client.on("message", async function (topic, message) {
             const milliseconds = parseInt(value, 10);
             const seconds = milliseconds / 1000;
             let totalFeedUsedNow = 0;
-            totalFeedUsedNow += seconds * 0.4;
 
-            let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id=${feeder_id}`;
+            let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage, motor_speed FROM FeedingDevices WHERE id=${feeder_id}`;
             models.sequelize
               .query(query, { type: QueryTypes.SELECT })
               .then((results) => {
                 console.log(results);
+                totalFeedUsedNow += seconds * results[0].motor_speed;
                 const newFeedLevel = results[0].feed_level - totalFeedUsedNow;
                 const newFeedLevelPercentage =
                   (newFeedLevel / results[0].tank_capacity) * 100;
@@ -491,10 +491,10 @@ client.on("message", async function (topic, message) {
                   const milliseconds = parseInt(value, 10);
                   const seconds = milliseconds / 1000;
                   let totalFeedUsedNow = 0;
-                  totalFeedUsedNow += seconds * 0.4;
+
                   console.log("Total Feed Used Now: " + totalFeedUsedNow);
 
-                  let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id = ${feeder_id}`;
+                  let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage, motor_speed FROM FeedingDevices WHERE id = ${feeder_id}`;
 
                   models.sequelize
                     .query(query, {
@@ -503,6 +503,7 @@ client.on("message", async function (topic, message) {
                     })
                     .then((results) => {
                       if (results.length > 0) {
+                        totalFeedUsedNow += seconds * results[0].motor_speed;
                         const newFeedLevel =
                           results[0].feed_level - totalFeedUsedNow;
                         const newFeedLevelPercentage =

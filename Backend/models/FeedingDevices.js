@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    motor_speed: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
   });
   return FeedingDevices;
 };
