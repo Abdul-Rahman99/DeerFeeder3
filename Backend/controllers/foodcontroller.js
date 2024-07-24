@@ -95,7 +95,12 @@ const ExecuteFeedNow = async (req, res) => {
     console.log("command", message);
     PublishCommand(topic, message);
     await models.AuditLogs.create({ command: message, user_id: userId });
-    
+
+    let newMessage = `{"0":"feed_done","50":"11","60":"45","61":"10000","62":"0","65":"1721243644","67":"2","68":"1439"}`;
+    await models.FeedingDone.create({
+      client_message: newMessage,
+      feeder_id: feedingDevices.id,
+    });
     const response = {
       status: true,
     };
@@ -241,92 +246,92 @@ const getFormatted = (str) => {
 };
 
 const getFeedConsumptionData = async (req, res) => {
-    try {
-      const feederId = req.params.feederId;
-      let sfilter = req.params.sfilter || "Daily";
-      let sdatefrom = req.params.datefrom;
-      let sdateto = req.params.dateto;
-  
-      // Log request parameters
-      console.log("Request Params:", { feederId, sfilter, sdatefrom, sdateto });
-  
-      // Validate feederId
-      if (!feederId) {
-        return res.status(400).send({ error: "Feeder ID is required" });
-      }
-  
-      // Default to last 7 days if dates are not provided
-      const today = moment().startOf("day");
-      const defaultDateFrom = moment().subtract(7, "days").startOf("day");
-  
-      sdatefrom = sdatefrom ? moment(sdatefrom, "YYYY-MM-DD") : defaultDateFrom;
-      sdateto = sdateto ? moment(sdateto, "YYYY-MM-DD") : today;
-  
-      if (!sdatefrom.isValid() || !sdateto.isValid()) {
-        return res.status(400).send({ error: "Invalid date format" });
-      }
-  
-      let selectCmd = "",
-        groupCmd = "",
-        orderCmd = "";
-      let duration_diff = 0;
-  
-      // Calculate duration
-      var duration = moment.duration(sdateto.diff(sdatefrom));
-      console.log(
-        "Duration:",
-        duration,
-        "From:",
-        sdatefrom.format("YYYY-MM-DD"),
-        "To:",
-        sdateto.format("YYYY-MM-DD")
-      );
-  
-      // Determine filter and SQL commands based on the filter type
-      switch (sfilter) {
-        case "Daily":
-          selectCmd = " DAYNAME(createdAt) as timeperiod, ";
-          groupCmd = " DAY(createdAt)";
-          orderCmd = "ORDER BY DAY(createdAt)";
-          duration_diff = duration.asDays();
-          break;
-        case "Weekly":
-          selectCmd = " WEEK(createdAt) as timeperiod, ";
-          groupCmd = " WEEK(createdAt)";
-          orderCmd = "ORDER BY WEEK(createdAt)";
-          duration_diff = duration.asWeeks();
-          break;
-        case "Monthly":
-          selectCmd = " MONTHNAME(createdAt) as timeperiod, ";
-          groupCmd = " MONTHNAME(createdAt)";
-          orderCmd = "ORDER BY MONTHNAME(createdAt)";
-          duration_diff = duration.asMonths();
-          break;
-        case "Yearly":
-          selectCmd = " YEAR(createdAt) as timeperiod, ";
-          groupCmd = " YEAR(createdAt)";
-          orderCmd = "ORDER BY YEAR(createdAt)";
-          duration_diff = duration.asYears();
-          break;
-        default:
-          sfilter = "Daily";
-          selectCmd = " DAYNAME(createdAt) as timeperiod, ";
-          groupCmd = " DAY(createdAt)";
-          orderCmd = "ORDER BY DAY(createdAt)";
-          duration_diff = duration.asDays();
-          break;
-      }
-  
-      console.log("Filter:", sfilter, "Duration Diff:", duration_diff);
-  
-      let testAr = [];
-      for (let i = 0; i <= duration_diff; i++) {
-        let moment_date = sdatefrom.clone().add(i, "days").format("YYYY-MM-DD");
-        console.log("Date:", moment_date);
-        testAr.push(moment_date);
-      }
-  
-      const query_max = `
+  try {
+    const feederId = req.params.feederId;
+    let sfilter = req.params.sfilter || "Daily";
+    let sdatefrom = req.params.datefrom;
+    let sdateto = req.params.dateto;
+
+    // Log request parameters
+    console.log("Request Params:", { feederId, sfilter, sdatefrom, sdateto });
+
+    // Validate feederId
+    if (!feederId) {
+      return res.status(400).send({ error: "Feeder ID is required" });
+    }
+
+    // Default to last 7 days if dates are not provided
+    const today = moment().startOf("day");
+    const defaultDateFrom = moment().subtract(7, "days").startOf("day");
+
+    sdatefrom = sdatefrom ? moment(sdatefrom, "YYYY-MM-DD") : defaultDateFrom;
+    sdateto = sdateto ? moment(sdateto, "YYYY-MM-DD") : today;
+
+    if (!sdatefrom.isValid() || !sdateto.isValid()) {
+      return res.status(400).send({ error: "Invalid date format" });
+    }
+
+    let selectCmd = "",
+      groupCmd = "",
+      orderCmd = "";
+    let duration_diff = 0;
+
+    // Calculate duration
+    var duration = moment.duration(sdateto.diff(sdatefrom));
+    console.log(
+      "Duration:",
+      duration,
+      "From:",
+      sdatefrom.format("YYYY-MM-DD"),
+      "To:",
+      sdateto.format("YYYY-MM-DD")
+    );
+
+    // Determine filter and SQL commands based on the filter type
+    switch (sfilter) {
+      case "Daily":
+        selectCmd = " DAYNAME(createdAt) as timeperiod, ";
+        groupCmd = " DAY(createdAt)";
+        orderCmd = "ORDER BY DAY(createdAt)";
+        duration_diff = duration.asDays();
+        break;
+      case "Weekly":
+        selectCmd = " WEEK(createdAt) as timeperiod, ";
+        groupCmd = " WEEK(createdAt)";
+        orderCmd = "ORDER BY WEEK(createdAt)";
+        duration_diff = duration.asWeeks();
+        break;
+      case "Monthly":
+        selectCmd = " MONTHNAME(createdAt) as timeperiod, ";
+        groupCmd = " MONTHNAME(createdAt)";
+        orderCmd = "ORDER BY MONTHNAME(createdAt)";
+        duration_diff = duration.asMonths();
+        break;
+      case "Yearly":
+        selectCmd = " YEAR(createdAt) as timeperiod, ";
+        groupCmd = " YEAR(createdAt)";
+        orderCmd = "ORDER BY YEAR(createdAt)";
+        duration_diff = duration.asYears();
+        break;
+      default:
+        sfilter = "Daily";
+        selectCmd = " DAYNAME(createdAt) as timeperiod, ";
+        groupCmd = " DAY(createdAt)";
+        orderCmd = "ORDER BY DAY(createdAt)";
+        duration_diff = duration.asDays();
+        break;
+    }
+
+    console.log("Filter:", sfilter, "Duration Diff:", duration_diff);
+
+    let testAr = [];
+    for (let i = 0; i <= duration_diff; i++) {
+      let moment_date = sdatefrom.clone().add(i, "days").format("YYYY-MM-DD");
+      console.log("Date:", moment_date);
+      testAr.push(moment_date);
+    }
+
+    const query_max = `
               SELECT COUNT(0) AS 'feed'
               FROM FeedingDones
               WHERE feeder_id = '${feederId}' 
@@ -335,54 +340,54 @@ const getFeedConsumptionData = async (req, res) => {
                 "YYYY-MM-DD"
               )}' AND '${sdateto.format("YYYY-MM-DD")}'
           `;
-      console.log("Query Max:", query_max);
-  
-      const records_max = await models.sequelize.query(query_max, {
-        type: QueryTypes.SELECT,
-      });
-      const feed_max = records_max ? records_max[0].feed : 0;
-      console.log("Feed Max:", feed_max);
-  
-      let myLabels = [];
-      let myValues = [];
-      let queries = [];
-  
-      if (sfilter === "Daily") {
-        for (let i = 0; i <= duration_diff; i++) {
-          let moment_date = sdatefrom.clone().add(i, "days").format("YYYY-MM-DD");
-          const query = `
+    console.log("Query Max:", query_max);
+
+    const records_max = await models.sequelize.query(query_max, {
+      type: QueryTypes.SELECT,
+    });
+    const feed_max = records_max ? records_max[0].feed : 0;
+    console.log("Feed Max:", feed_max);
+
+    let myLabels = [];
+    let myValues = [];
+    let queries = [];
+
+    if (sfilter === "Daily") {
+      for (let i = 0; i <= duration_diff; i++) {
+        let moment_date = sdatefrom.clone().add(i, "days").format("YYYY-MM-DD");
+        const query = `
                       SELECT client_message AS 'feed'
                       FROM FeedingDones
                       WHERE feeder_id = '${feederId}' 
                       AND DATE(createdAt) = '${moment_date}'
                   `;
-          console.log("Query:", query);
-  
-          myLabels.push(moment_date);
-          queries.push(
-            models.sequelize.query(query, { type: QueryTypes.SELECT })
-          );
+        console.log("Query:", query);
+
+        myLabels.push(moment_date);
+        queries.push(
+          models.sequelize.query(query, { type: QueryTypes.SELECT })
+        );
+      }
+
+      (await Promise.all(queries)).forEach((records) => {
+        let feed_consumed = 0;
+        if (records) {
+          records.forEach((val) => {
+            let feed = JSON.parse(val.feed);
+            if (feed[61]) {
+              let timeran = feed[61]; // motor duration
+              feed_consumed += (timeran / 1000) * motor.kgPerSec;
+            }
+          });
         }
-  
-        (await Promise.all(queries)).forEach((records) => {
-          let feed_consumed = 0;
-          if (records) {
-            records.forEach((val) => {
-              let feed = JSON.parse(val.feed);
-              if (feed[61]) {
-                let timeran = feed[61]; // motor duration
-                feed_consumed += (timeran / 1000) * motor.kgPerSec;
-              }
-            });
-          }
-          myValues.push(Math.round(feed_consumed) || 0);
-        });
-  
-        console.log("Labels:", myLabels);
-        console.log("Values:", myValues);
-        res.status(200).send({ data: myValues, labels: myLabels, max: feed_max });
-      } else {
-        const query = `
+        myValues.push(Math.round(feed_consumed) || 0);
+      });
+
+      console.log("Labels:", myLabels);
+      console.log("Values:", myValues);
+      res.status(200).send({ data: myValues, labels: myLabels, max: feed_max });
+    } else {
+      const query = `
                   SELECT ${selectCmd} COUNT(0) AS 'feed', DAYNAME(MAX(createdAt)) AS 'dayname',
                       MONTHNAME(MAX(createdAt)) AS 'monthname', YEAR(MAX(createdAt)) AS 'year', DATE(MAX(createdAt)) AS 'createdAt'
                   FROM FeedingDones
@@ -394,40 +399,40 @@ const getFeedConsumptionData = async (req, res) => {
                   GROUP BY ${groupCmd}
                   ${orderCmd}
               `;
-        console.log("Query:", query);
-  
-        const records = await models.sequelize.query(query, {
-          type: QueryTypes.SELECT,
-        });
-        if (records) {
-          records.forEach((val) => {
-            let timeperiod = val.timeperiod;
-            let feed = val.feed;
-            let monthname = val.monthname.substring(0, 3);
-            let year = val.year;
-            if (sfilter === "Weekly")
-              myLabels.push(`${monthname} Week ${timeperiod}`);
-            else if (sfilter === "Monthly") myLabels.push(`${monthname}-${year}`);
-            else myLabels.push(timeperiod);
-            myValues.push(feed * 2);
-          });
-  
-          console.log("Labels:", myLabels);
-          console.log("Values:", myValues);
-          res
-            .status(200)
-            .send({ data: myValues, labels: myLabels, max: feed_max });
-        } else {
-          res.status(200).send(myValues);
-        }
-      }
-    } catch (error) {
-      console.error("Error in getFeedConsumptionData:", error);
-      res.status(500).send({
-        error: "An error occurred while fetching feed consumption data",
+      console.log("Query:", query);
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
+      if (records) {
+        records.forEach((val) => {
+          let timeperiod = val.timeperiod;
+          let feed = val.feed;
+          let monthname = val.monthname.substring(0, 3);
+          let year = val.year;
+          if (sfilter === "Weekly")
+            myLabels.push(`${monthname} Week ${timeperiod}`);
+          else if (sfilter === "Monthly") myLabels.push(`${monthname}-${year}`);
+          else myLabels.push(timeperiod);
+          myValues.push(feed * 2);
+        });
+
+        console.log("Labels:", myLabels);
+        console.log("Values:", myValues);
+        res
+          .status(200)
+          .send({ data: myValues, labels: myLabels, max: feed_max });
+      } else {
+        res.status(200).send(myValues);
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error in getFeedConsumptionData:", error);
+    res.status(500).send({
+      error: "An error occurred while fetching feed consumption data",
+    });
+  }
+};
 
 const getSunriseSunsetRange = async (req, res) => {
   const { sDay = new Date(), eDay = new Date() } = req.query;
