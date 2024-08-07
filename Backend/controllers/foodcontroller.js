@@ -47,9 +47,9 @@ const addSchedule = async (req, res) => {
   } catch (error) {
     const response = {
       status: "failed",
-      error: error,
+      error: error.message,
     };
-    res.status(201).json(response);
+    res.status(400).json(response);
   }
 };
 const deleteSchedule = async (req, res) => {
@@ -71,7 +71,7 @@ const deleteSchedule = async (req, res) => {
     const response = {
       status: "failed",
     };
-    res.status(201).json(response);
+    res.status(400).json(response);
   }
 };
 const ExecuteFeedNow = async (req, res) => {
