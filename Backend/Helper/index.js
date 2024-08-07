@@ -10,9 +10,9 @@ const {
   INTEGER,
   query,
 } = require("sequelize");
-const {
-  ExecuteFeedNowWT,
-} = require("../controllers/foodcontroller");
+// const {
+//   ExecuteFeedNowWT,
+// } = require("../controllers/foodcontroller");
 
 const handleQuantity = (time, qty) => {
   let div = qty / 2;
@@ -73,22 +73,15 @@ const collectSchedules = async (feeder_id, curday = "today") => {
   let moment_date;
   let dayName;
   if (curday == "today") {
-    // const wdata = await getWeatherData("dubai")
-    // let moment_date = moment().utcOffset(240).format("YYYY-MM-DD");
+
     moment_date = moment().utcOffset(240).format("YYYY-MM-DD");
-    // let dayName = moment().zone("+0400").format("ddd")
-    // let dayName = moment().utcOffset(240).format("ddd");
+
     dayName = moment().utcOffset(240).format("ddd");
   } else {
-    // const wdata = await getWeatherData("dubai")
-    // let moment_date = moment().utcOffset(240).format("YYYY-MM-DD");
     moment_date = moment().add(1, "day").utcOffset(240).format("YYYY-MM-DD");
-    // let dayName = moment().zone("+0400").format("ddd")
-    // let dayName = moment().utcOffset(240).format("ddd");
+
     dayName = moment().add(1, "day").utcOffset(240).format("ddd");
   }
-  console.log("Today date: ", moment_date);
-  console.log("Today date: ", dayName);
 
   let whereCond = {
     is_enabled: 1,
@@ -102,8 +95,6 @@ const collectSchedules = async (feeder_id, curday = "today") => {
       moment_date
     ),
   });
-  // console.log("Today date: ", SunriseSunset)
-  // process.exit(0)
 
   if (SunriseSunset) {
     let sunrise = SunriseSunset.sunrise;
@@ -118,7 +109,6 @@ const collectSchedules = async (feeder_id, curday = "today") => {
       var dateString_Sunrise = moment(moment_date + " " + sunrise);
       var dateString_Sunset = moment(moment_date + " " + sunset);
 
-      // console.log("feederId", feederId)
       console.log("sunrise", sunrise);
       console.log("sunset", sunset);
       console.log("Ssunrise", dateString_Sunrise);
@@ -148,18 +138,7 @@ const collectSchedules = async (feeder_id, curday = "today") => {
             feedtimesplited.map((val) => {
               StrTimings.push(val);
             });
-            // if (feed_time != "null" && feed_time !== null) {
-            //     if (feed_time.indexOf(",") >= 0) {
-            //         let feedtimesplited = feed_time.split(",");
-            //         feedtimesplited.map((val) => {
-            //             StrTimings.push(val);
-            //         })
-            //     } else {
-            //         StrTimings.push(feed_time);
-            //     }
-            // }
 
-            // StrTimings.push(feed_time);
           } else if (feed_schedule == "Sunrise") {
             console.log("sunrise in");
             if (feed_time_type == "before") {
@@ -261,18 +240,15 @@ const collectSchedules = async (feeder_id, curday = "today") => {
 };
 
 const ExecuteFeedingCommands = async (feeder_id = null, userId = null) => {
-  // const wdata = await getWeatherData("dubai")
-  // let moment_date = moment().utcOffset(240).format("YYYY-MM-DD");
+
   let moment_date = moment().format("YYYY-MM-DD");
-  // let dayName = moment().zone("+0400").format("ddd")
-  // let dayName = moment().utcOffset(240).format("ddd");
+
   let dayName = moment().format("ddd");
-  console.log("Today date: ", moment_date);
-  console.log("Today date: ", dayName);
 
   let whereCond = {
     is_enabled: 1,
   };
+
   if (feeder_id && userId) {
     whereCond = {
       is_enabled: 1,
@@ -287,8 +263,6 @@ const ExecuteFeedingCommands = async (feeder_id = null, userId = null) => {
       moment_date
     ),
   });
-  // console.log("Today date: ", SunriseSunset)
-  // process.exit(0)
 
   if (SunriseSunset) {
     let sunrise = SunriseSunset.sunrise;
@@ -304,10 +278,6 @@ const ExecuteFeedingCommands = async (feeder_id = null, userId = null) => {
       var dateString_Sunset = moment(moment_date + " " + sunset);
 
       // console.log("feederId", feederId)
-      console.log("sunrise", sunrise);
-      console.log("sunset", sunset);
-      console.log("Ssunrise", dateString_Sunrise);
-      console.log("Ssunset", dateString_Sunset);
 
       let FeederTimings = [];
       let Feeders = [];
@@ -594,27 +564,27 @@ const getFeedLevelWtData = async () => {
         }
       }, 10000);
 
-      setTimeout(async () => {
+    //   setTimeout(async () => {
 
-        if (
-          (myNewAr.Tray1 >= 15 || myNewAr.Tray2 >= 15 || myNewAr.Tray3 >= 15 || myNewAr.Tray4 >= 15) &&
-          myNewAr.mode3_status == 1
-        ) {
-          // ExecuteFeedingStopCommands(id, 0, 11);
-          await models.FeedingDevices.update(
-            { mode3_status: 0 },
-            { where: { id: myNewAr.id } }
-          );
-        } else {
-          if(myNewAr.mode3_status == 1 && myNewAr.has_mode3 == 1){
+    //     if (
+    //       (myNewAr.Tray1 >= 15 || myNewAr.Tray2 >= 15 || myNewAr.Tray3 >= 15 || myNewAr.Tray4 >= 15) &&
+    //       myNewAr.mode3_status == 1
+    //     ) {
+    //       // ExecuteFeedingStopCommands(id, 0, 11);
+    //       await models.FeedingDevices.update(
+    //         { mode3_status: 0 },
+    //         { where: { id: myNewAr.id } }
+    //       );
+    //     } else {
+    //       if(myNewAr.mode3_status == 1 && myNewAr.has_mode3 == 1){
             
-            ExecuteFeedNowWT({
-              params: { userId: 11, feederId: myNewAr.id },
-              body: { quantity: 10 },
-            });
-          }
-        }
-      }, 1000);
+    //         ExecuteFeedNowWT({
+    //           params: { userId: 11, feederId: myNewAr.id },
+    //           body: { quantity: 10 },
+    //         });
+    //       }
+    //     }
+    //   }, 1000);
 
       if (tankLevel <= 30) {
         LowFeedLevels.push(id);

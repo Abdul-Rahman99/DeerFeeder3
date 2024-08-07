@@ -234,7 +234,7 @@ const getSchedules = async (req, res) => {
   } catch (error) {
     const response = {
       status: "failed",
-      error: error,
+      error: error.message,
     };
     res.status(400).json(response);
   }
