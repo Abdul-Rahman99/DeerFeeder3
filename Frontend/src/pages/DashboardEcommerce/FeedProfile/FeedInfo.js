@@ -19,7 +19,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
   tray4,
   tankLevel2,
  }) => {
-  var chartDoughnutColors = ["#399918","#F6E96B"];
+  var chartDoughnutColors = ["#399918","#F6E96B","#F6E96B","#F6E96B","#F6E96B"];
   var optionWithTrays = {
     tooltip: {
       show: false
