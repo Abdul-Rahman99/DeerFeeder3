@@ -87,8 +87,8 @@ const FeedProfile = () => {
         console.error("Error fetching feed level data:", error);
       }
     };
-
-    const interval = setInterval(fetchFeedLevelData, 5000);
+    fetchFeedLevelData();
+    const interval = setInterval(fetchFeedLevelData, 210000);
 
     return () => clearInterval(interval);   
   }, [currentFeederId]);
