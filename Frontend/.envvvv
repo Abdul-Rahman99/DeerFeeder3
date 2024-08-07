@@ -1,8 +1,8 @@
 PUBLIC_URL=
 
 # REACT_APP_API_URL="https://api-node.theme-sbrand.website"
-REACT_APP_API_URL="http://localhost:7001"
-REACT_APP_SOCKET_API_URL="http://localhost:7002"
+REACT_APP_API_URL="https://ghazaal.dccme.ai:7001"
+REACT_APP_SOCKET_API_URL="https://ghazaal.dccme.ai:7002"
 # REACT_APP_API_URL="http://bf.okab.ae"
 REACT_APP_WEATHER_API_URL="https://api.openweathermap.org/data/2.5/weather"
 REACT_APP_WEATHER_API_KEY="e0e1705375a62298c79d713a320acb4b"
