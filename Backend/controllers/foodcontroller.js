@@ -236,7 +236,7 @@ const getSchedules = async (req, res) => {
       status: "failed",
       error: error,
     };
-    res.status(201).json(response);
+    res.status(400).json(response);
   }
 };
 const getFormatted = (str) => {
