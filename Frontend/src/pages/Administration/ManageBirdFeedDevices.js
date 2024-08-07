@@ -28,6 +28,11 @@ const ManageBirdFeedDevices = () => {
   const [title, setTitle] = useState("");
   const [feeder_id, setFeederId] = useState("");
   const [mac_address, setMacAdd] = useState("");
+  const [has_capacity, setHasCapacity] = useState(false);
+  const [motor_speed, setMotorSpeed] = useState("");
+  const [has_tray, setHasTray] = useState(false);
+  const [has_mode3, setHasMode3] = useState(false);
+  const [mode3_status, setHasMode3Status] = useState("");
   const [camera_mac_address, setCameraMacAdd] = useState("");
   const [location, setLocation] = useState("");
   const [ip_address, setIP] = useState("");
@@ -78,6 +83,12 @@ const ManageBirdFeedDevices = () => {
       newErrors.latitude = "Latitude must be a number";
     if (longitude && isNaN(parseFloat(longitude)))
       newErrors.longitude = "Longitude must be a number";
+    if (motor_speed && isNaN(parseFloat(motor_speed)))
+      newErrors.motor_speed = "Motor Speed must be a float number";
+    // if (typeof has_capacity !== "boolean")
+    //   newErrors.has_capacity = "Has Capacity must be a boolean value";
+    // if (typeof has_tray !== "boolean")
+    //   newErrors.has_tray = "Has Tray must be a boolean value";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -103,6 +114,11 @@ const ManageBirdFeedDevices = () => {
         ip_address,
         latitude,
         longitude,
+        has_capacity,
+        motor_speed,
+        has_tray,
+        has_mode3,
+        mode3_status,
       })
       .then((res) => {
         if (res && res.status === true) {
@@ -191,6 +207,11 @@ const ManageBirdFeedDevices = () => {
       setCameraMacAdd("");
       setLat("");
       setLong("");
+      setHasCapacity(false);
+      setMotorSpeed("");
+      setHasTray(false);
+      setHasMode3(false);
+      setHasMode3Status(false);
     } else {
       setId(val.id);
       setTitle(val.title);
@@ -199,6 +220,11 @@ const ManageBirdFeedDevices = () => {
       setIP(val.ip_address);
       setMacAdd(val.mac_address);
       setCameraMacAdd(val.camera_mac_address);
+      setHasCapacity(val.has_capacity);
+      setMotorSpeed(val.motor_speed);
+      setHasTray(val.has_tray);
+      setHasMode3(val.has_mode3);
+      setHasMode3Status(val.mode3_status);
       let JsonC = JSON.parse(val.other_info);
       setLat(JsonC.latitude);
       setLong(JsonC.longitude);
@@ -225,7 +251,7 @@ const ManageBirdFeedDevices = () => {
             tog_backdrop();
           }}
         >
-          {isNew ? "Add" : "Update"} Deer Feeder
+          {isNew ? "Add" : "Update"} Bird Feeder
         </ModalHeader>
         <ModalBody className="p-3">
           <Row className="mt-2">
@@ -290,6 +316,68 @@ const ManageBirdFeedDevices = () => {
               {errors.ip_address && (
                 <div className="text-danger">{errors.ip_address}</div>
               )}
+            </Col>
+          </Row>
+          <Row className="mt-2">
+            <Col xl={6}>
+              <label htmlFor="has_capacity">Has Capacity:</label>
+              <input
+                type="checkbox"
+                name="has_capacity"
+                id="has_capacity"
+                checked={has_capacity}
+                onChange={(e) => setHasCapacity(e.target.checked)}
+                className="form-check"
+              />
+              {errors.has_capacity && (
+                <div className="text-danger">{errors.has_capacity}</div>
+              )}
+            </Col>
+            <Col xl={6}>
+              <label htmlFor="has_tray">Has Tray:</label>
+              <input
+                type="checkbox"
+                name="has_tray"
+                id="has_tray"
+                checked={has_tray}
+                onChange={(e) => setHasTray(e.target.checked)}
+                className="form-check"
+              />
+              {errors.has_tray && (
+                <div className="text-danger">{errors.has_tray}</div>
+              )}
+            </Col>
+          </Row>
+
+          <Row className="mt-2">
+            <Col xl={6}>
+              <label>Motor Speed:</label>
+              <input
+                type="text"
+                name="motor_speed"
+                id="motor_speed"
+                value={motor_speed}
+                onChange={(e) => setMotorSpeed(e.target.value)}
+                placeholder="Motor Speed"
+                className="form-control"
+              />
+              {errors.motor_speed && (
+                <div className="text-danger">{errors.motor_speed}</div>
+              )}
+            </Col>
+            <Col xl={6}>
+              <label htmlFor="has_mode3">Automation Mode 3:</label>
+              <input
+                type="checkbox"
+                name="has_mode3"
+                id="has_mode3"
+                checked={has_mode3}
+                onChange={(e) => setHasMode3(e.target.checked)}
+                className="form-check"
+              />
+              {/* {errors.has_mode3 && (
+                <div className="text-danger">{errors.has_mode3}</div>
+              )} */}
             </Col>
           </Row>
           <Row className="mt-2">
@@ -413,6 +501,11 @@ const ManageBirdFeedDevices = () => {
                           <th scope="col">Location</th>
                           <th scope="col">MAC Address</th>
                           <th scope="col">Camera MAC Address</th>
+                          <th scope="col">NOT Fixed Capacity</th>
+                          <th scope="col">Has Tray</th>
+                          <th scope="col">Feed Per Second</th>
+                          <th scope="col">Has Mode 3</th>
+                          <th scope="col">Mode 3 Status</th>
                           <th scope="col">Creation Date</th>
                           <th scope="col">Status</th>
                           <th scope="col">Actions</th>
@@ -428,6 +521,11 @@ const ManageBirdFeedDevices = () => {
                               <td>{val.location}</td>
                               <td>{val.mac_address}</td>
                               <td>{val.camera_mac_address}</td>
+                              <td>{val.has_capacity ? "Yes" : "No"}</td>
+                              <td>{val.has_tray ? "Yes" : "No"}</td>
+                              <td>{val.motor_speed}</td>
+                              <td>{val.has_mode3 ? "Yes" : "No"}</td>
+                              <td>{val.mode3_status ? "Yes" : "No"}</td>
                               <td>
                                 {moment(val.createdAt).format(
                                   "YYYY-MM-DD h:mm:ss a"
