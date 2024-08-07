@@ -190,7 +190,7 @@ const FeedLevelData = ({has_capacity,feedLevel,hasTray,
         </Card>
       </Col>
   ) : (
-    <Col lg={4}>
+    <Col lg={6}>
         <Card>
           <CardHeader>
             <h5 className="card-title mb-0">Feed Quantity</h5>
@@ -246,12 +246,12 @@ export const FeedInfo = ({
       {
         title: "Feeder Temperature",
         value: <>{temp} &deg;c</>,
-        image: <img src={temp_pic} width="40" height="40" />,
+        image: <img src={temp_pic} width="40" alt="temp" height="40" />,
       },
       {
         title: "Feeder Humidity",
         value: `${Math.floor(hum)} %`,
-        image: <img src={hum_pic} width="40" height="40" />,
+        image: <img src={hum_pic} width="40" alt="hum" height="40" />,
       },
       {
         title: "Battery Charging",
@@ -261,6 +261,7 @@ export const FeedInfo = ({
             src={btyCur < 0 ? battery_pic : battery_pic_no}
             width="25"
             height="40"
+            alt="battery"
           />
         ),
       },
@@ -284,38 +285,8 @@ export const FeedInfo = ({
       tray4={tray4}
       tankLevel2={tankLevel2}
       />
-      <Col lg={8}>
-        
+      <Col lg={6}>
         <Row>
-          <Col xl={6} md={6}>
-            <Card className="last-feed text-white p-md-2">
-              <CardBody>
-                <p style={{ fontSize: "19px", fontWeight: "500" }}>Last Feed</p>
-                <h2
-                  className={
-                    "mt-4 ff-secondary fw-semibold text-white text-center"
-                  }
-                >
-                  <span className="counter-value text-center">{lastTime}</span>
-                </h2>
-                <div style={{ width: "94%" }}>
-                  <h4
-                    className="d-flex justify-content-end text-white"
-                    style={{ fontSize: "14px" }}
-                  >
-                    {lastDate}
-                  </h4>
-                </div>
-                <div
-                  className="sun-rise d-flex align-items-center justify-content-end my-2"
-                  style={{ width: "94%" }}
-                >
-                  <br></br>
-                  <br></br>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
           <Col xl={6} md={6}>
             <Card className={"next-feed text-white p-md-2"}>
               <CardBody>
