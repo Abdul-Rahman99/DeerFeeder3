@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: "1",
     },
     feed_level: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     feed_level_percentage: {
@@ -45,6 +45,51 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    motor_speed: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    Tray1: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    Tray2: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    Tray3: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    Tray4: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    has_capacity: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    feed_level2: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    has_tray: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    has_mode3: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
+    mode3_status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
   });
+
   return FeedingDevices;
 };
