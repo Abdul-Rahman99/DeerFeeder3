@@ -37,6 +37,11 @@ const addDevice = async (req, res) => {
       feed_level,
       feed_level_percentage,
       tank_capacity,
+      motor_speed,
+      has_capacity,
+      has_tray,
+      has_mode3,
+      mode3_status,
     } = req.body;
 
     const other_info = JSON.stringify({
@@ -73,6 +78,16 @@ const addDevice = async (req, res) => {
         feed_level: 800,
         feed_level_percentage: 100,
         tank_capacity: 800,
+        motor_speed,
+        Tray1: 0,
+        Tray2: 0,
+        Tray3: 0,
+        Tray4: 0,
+        feed_level2: 0,
+        has_capacity,
+        has_tray,
+        has_mode3: 0,
+        mode3_status: 0,
       });
     } else {
       feedDevice = await models.FeedingDevices.update(
@@ -87,6 +102,11 @@ const addDevice = async (req, res) => {
           feed_level,
           feed_level_percentage,
           tank_capacity,
+          motor_speed,
+          has_capacity,
+          has_tray,
+          has_mode3,
+          mode3_status,
         },
         { where: { id: id } }
       );
@@ -324,7 +344,7 @@ const getBirdsDataForGraph = async (req, res) => {
         ${timeRangeGroupByField} as time,
         CONCAT(
             '[',
-            GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
+            GROUP_CONCAT(UPPER(json_extract(client_message, '$.species_detected'))),
             ']'
         ) as speciesInfo,
         (
@@ -334,7 +354,7 @@ const getBirdsDataForGraph = async (req, res) => {
                 SELECT
                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
                     client_topic,
-                    MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
+                    MAX(json_extract(client_message, '$.countBirds')) as max_count
                 FROM
                     BirdsData
                 WHERE
@@ -374,15 +394,12 @@ const getBirdsDataForGraph = async (req, res) => {
 
   const birdspiedata = new Map();
   const data = new Map();
-
   birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
-    // Append data for pie graph
-    JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
-      Object.entries(all_objs_dict).forEach(([key, count]) => {
-        if (key !== "NOT_BIRD") {
-          const specieCount = birdspiedata.get(key) || 0;
-          birdspiedata.set(key, specieCount + count);
-        }
+    // append data for pie graph
+    JSON.parse(speciesInfo)?.forEach((species_detected_arr) => {
+      species_detected_arr?.forEach((specie) => {
+        const specieCount = birdspiedata.get(specie);
+        birdspiedata.set(specie, specieCount ? specieCount + 1 : 1);
       });
     });
 
@@ -403,8 +420,6 @@ const getBirdsDataForGraph = async (req, res) => {
         birds: Array.from(data.values()),
       },
     };
-
-    // Return or use the response as needed
 
     res.status(200).json(response);
   } else res.status(200).json({ success: false });
@@ -456,7 +471,7 @@ const getExportedData = async (req, res) => {
                 GROUP_CONCAT(json_extract(client_message, '$.species_detected')),
                 ']'
             ) as speciesInfo,
-            MAX(json_extract(client_message, '$.deer_oryx_count')) as maxCount
+            MAX(json_extract(client_message, '$.countBirds')) as maxCount
         
         FROM
             BirdsData
@@ -601,7 +616,7 @@ const getBirdsDataForAdmin = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ success: false, error: "Internal Server Error" });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
