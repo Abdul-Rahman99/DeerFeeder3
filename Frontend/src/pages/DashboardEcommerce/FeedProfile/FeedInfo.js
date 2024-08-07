@@ -32,7 +32,6 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
       {
         name: 'Feed Level',
         type: 'pie',
-        selectedMode: 'single',
         radius: [0, '45.5%'],
         label: {
           position: 'center',
