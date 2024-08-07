@@ -50,7 +50,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
         radius: ['45%', '70%'],
         padAngle: 8,
         itemStyle: {
-          borderRadius: 15
+          borderRadius: 10
         },
         color: chartDoughnutColors,
         labelLine: {
