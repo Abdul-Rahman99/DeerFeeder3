@@ -22,7 +22,8 @@ const io = require("socket.io")(process.env.SOCKET_PORT, {
       //"http://gaztec.ddns.net:8080",
       //"http://92.98.78.202:8080",
       "http://192.168.1.7:1883",
-      //"http://91.72.155.42:8080"
+      //"http://91.72.155.42:8080",
+      "https://ghazaal.dccme.ai",
     ],
   },
   maxHttpBufferSize: 1e8,

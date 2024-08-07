@@ -20,6 +20,13 @@ const TankControl = ({
   setTankCapacity,
   handleRefill,
   feedUsed,
+  tray1,
+  tray2,
+  tray3,
+  tray4,
+  tankLevel2,
+  hasCapacity,
+  hasTray,
 }) => {
   const [inputTankCapacity, setInputTankCapacity] = useState("");
   const [validationError, setValidationError] = useState("");
@@ -58,7 +65,44 @@ const TankControl = ({
   const feederInfo = useMemo(() => {
     const adjustedFeedUsed = Math.max(0, feedUsed);
 
-    return [
+    console.log("hassss" + hasTray)
+    let trays;
+    if (hasTray) {
+      trays = [
+        {
+          title: "Tray 1",
+          value: `${tray1.toFixed(2)} (Kgs)`,
+        },
+        {
+          title: "Tray 2",
+          value: `${tray2.toFixed(2)} (Kgs)`,
+        },
+        {
+          title: "Tray 3",
+          value: `${tray3.toFixed(2)} (Kgs)`,
+        },
+        {
+          title: "Tray 4",
+          value: `${tray4.toFixed(2)} (Kgs)`,
+        },
+        {
+          title: "Tank Wieght",
+          value: `${tankLevel2.toFixed(2)} (Kgs)`,
+        }
+      ] 
+    } else {
+      trays = [
+        {
+          title: "Tank Wieght",
+          value: `${tray1.toFixed(2)} (Kgs)`,
+        },
+      ];
+    }
+
+    
+
+    return hasCapacity ? [
+      
       {
         title: "Feed Remaining",
         value: <>{adjustedFeedUsed.toFixed(2)} (Kgs)</>,
@@ -83,47 +127,16 @@ const TankControl = ({
       //     </>
       //   ),
       // },
-    ];
+    ] : 
+
+    trays
+    ;
+
   }, [tankCapacity, feedUsed]);
 
   return (
     <>
-      <Row className="justify-content-center">
-        {/* <Col lg={6} className="mb-4">
-          <Card style={{ minHeight: "170px", height: "170px" }}>
-            <CardHeader>
-              <h5 className="card-title mb-0">Tank Control</h5>
-            </CardHeader>
-            <CardBody>
-              <FormGroup className="d-flex justify-content-center align-items-center">
-                <Input
-                  type="text"
-                  placeholder="Enter Tank Capacity"
-                  value={inputTankCapacity}
-                  onChange={handleInputChange}
-                  pattern="\d*"
-                  maxLength="3"
-                  className="me-2"
-                  width={"300"}
-                />
-                <div className="text-danger me-2">{validationError}</div>
-                <Button
-                  color="primary"
-                  className="me-2"
-                  onClick={() => setIsRefillModalOpen(true)}
-                >
-                  Refill to 100%
-                </Button>
-                <Button
-                  color="success"
-                  onClick={() => setIsUpdateModalOpen(true)}
-                >
-                  Set Capacity
-                </Button>
-              </FormGroup>
-            </CardBody>
-          </Card>
-        </Col> */}
+      <Row className="justify-content-start">
 
         {feederInfo.map(({ title, value }) => (
           <Col key={title} lg={6} xl={6} md={6} className="mb-4">

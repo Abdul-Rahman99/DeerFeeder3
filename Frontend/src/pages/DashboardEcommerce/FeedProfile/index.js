@@ -36,7 +36,20 @@ const FeedProfile = () => {
   const [feedPerSecond] = useState(0.4); // 0.4 kg per second, 0.8 kg for 2 seconds
   const [schedulesPerformed, setSchedulesPerformed] = useState(0);
   const [feedLevel, setFeedLevel] = useState(100);
+  const [tankLevel2, setFeedLevel2] = useState(0);
+
+  
   const [feedUsed, setFeedUsed] = useState(0);
+
+  const [Tray1, setTray1] = useState(0);
+  const [Tray2, setTray2] = useState(0);
+  const [Tray3, setTray3] = useState(0);
+  const [Tray4, setTray4] = useState(0);
+  const [hasCapacity, setHasCapacity] = useState(0);
+  const [hasTray, setHasTray] = useState(0);
+
+
+
   const [feederId, setFeederId] = useState("");
 
   const { camPic, camPic2, updateCameras } = useCameras(currentFeederId);
@@ -48,17 +61,25 @@ const FeedProfile = () => {
   const handleSchedulePerformed = (schedulesPerformed) => {
     setSchedulesPerformed(schedulesPerformed + 1);
   };
+  // console.log("HEEEEE " + schedulesActive);  
   useEffect(() => {
     const fetchFeedLevelData = async () => {
       try {
-        const response = await api.get("getFeedLevelData");
+        const response = await api.get("getFeedLevelWtData");
         const feedLevelData = response.data.all.find(
           (item) => item.id === currentFeederId
         );
         if (feedLevelData) {
           setTankCapacity(800);
-          // setSchedulesPerformed(0);
-          setFeedLevel(feedLevelData.tankLevel);
+          setFeedLevel(feedLevelData.tankLevel ?? 0);
+          setFeedLevel2(feedLevelData.tankLevel2 ?? 0);
+
+          setTray1(feedLevelData.Tray1  < 0 ? 0 : feedLevelData.Tray1 ?? 0);
+          setTray2(feedLevelData.Tray2  < 0 ? 0 : feedLevelData.Tray2 ?? 0);
+          setTray3(feedLevelData.Tray3  < 0 ? 0 : feedLevelData.Tray3 ?? 0);
+          setTray4(feedLevelData.Tray4  < 0 ? 0 : feedLevelData.Tray4 ?? 0);
+          setHasCapacity(feedLevelData.has_capacity);
+          setHasTray(feedLevelData.has_tray);
           setFeedUsed((feedLevelData.tankLevel * 800) / 100);
           setFeederId(feedLevelData.id);
         }
@@ -66,7 +87,10 @@ const FeedProfile = () => {
         console.error("Error fetching feed level data:", error);
       }
     };
-    fetchFeedLevelData();
+
+    const interval = setInterval(fetchFeedLevelData, 5000);
+
+    return () => clearInterval(interval);   
   }, [currentFeederId]);
   useEffect(() => {
     if (!schedulesActive) {
@@ -142,6 +166,14 @@ const FeedProfile = () => {
           feedLevel={feedLevel}
           handleSchedulePerformed={handleSchedulePerformed}
           feedUsed={feedUsed}
+          tray1={Tray1}
+          tray2={Tray2}
+          tray3={Tray3}
+          tray4={Tray4}
+          hasTray={hasTray}
+          tankLevel2={tankLevel2}
+          hasCapacity={hasCapacity}
+
           currentFeederId={currentFeederId}
         />
         <FeedInfo
@@ -154,6 +186,13 @@ const FeedProfile = () => {
           feedPerSecond={feedPerSecond}
           handleSchedulePerformed={handleSchedulePerformed}
           feedLevel={feedLevel}
+          has_capacity={hasCapacity}
+          tray1={Tray1}
+          tray2={Tray2}
+          tray3={Tray3}
+          tray4={Tray4}
+          hasTray={hasTray}
+          tankLevel2={tankLevel2}
           setSchedulesPerformed={setSchedulesPerformed}
           schedulesPerformed={schedulesPerformed}
         />

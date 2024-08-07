@@ -19,13 +19,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:8080",
-      "http://192.168.1.5:8080",
+      "http://192.168.1.43:8080",
       "http://gaztec.ddns.net:8080",
       "http://92.98.78.202:8080",
       "https://mngar.ae:8080",
       "https://www.mngar.ae:8080",
       "https://mngar.ae",
       "http://localhost:3000",
+      "https://ghazaal.dccme.ai",
     ],
     credentials: true,
     optionsSuccessStatus: 200,

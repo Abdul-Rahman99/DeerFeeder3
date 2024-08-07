@@ -1,5 +1,7 @@
 import React, { useMemo } from "react";
 import { Col, Row, Card, CardBody, CardHeader } from "reactstrap";
+import ReactEcharts from "echarts-for-react";
+import getChartColorsArray from "../../../Components/Common/ChartsDynamicColor";
 
 import {
   tankpic,
@@ -9,6 +11,202 @@ import {
   battery_pic_no,
 } from "../../../assets/images";
 
+
+const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
+  tray1,
+  tray2,
+  tray3,
+  tray4,
+  tankLevel2,
+ }) => {
+  var chartDoughnutColors = ["#399918","#387F39","#F6E96B","#BEDC74","#B43F3F"];
+  var optionWithTrays = {
+    tooltip: {
+      show: false
+    },
+    legend: {
+      show: false
+    },
+    color: chartDoughnutColors,
+    series: [
+      {
+        name: 'Feed Level',
+        type: 'pie',
+        selectedMode: 'single',
+        radius: [0, '30%'],
+        label: {
+          position: 'center',
+          fontSize: 19
+        },
+        labelLine: {
+          show: false
+        },
+        data: [
+          { value: tankLevel2, name: tankLevel2 + " kg", selected: true }
+        ]
+      },
+      {
+        name: 'Feed Level',
+        type: 'pie',
+        radius: ['45%', '60%'],
+        color: chartDoughnutColors,
+        labelLine: {
+          length: 30
+        },
+        label: {
+          formatter: '{b|{b}：}{c} kg',
+          backgroundColor: '#F6F8FC',
+          borderColor: '#8C8D8E',
+          borderWidth: 1,
+          borderRadius: 4,
+          rich: {
+            a: {
+              color: '#6E7079',
+              lineHeight: 22,
+              align: 'center'
+            },
+            hr: {
+              borderColor: '#8C8D8E',
+              width: '100%',
+              borderWidth: 1,
+              height: 0
+            },
+            b: {
+              color: '#4C5058',
+              fontSize: 14,
+              fontWeight: 'bold',
+              lineHeight: 33
+            },
+            per: {
+              color: '#fff',
+              backgroundColor: '#4C5058',
+              padding: [3, 4],
+              borderRadius: 4
+            }
+          }
+        },
+        data: [
+          { value: tray1, name: 'Tray 1' },
+          { value: tray2, name: 'Tray 2' },
+          { value: tray3, name: 'Tray 3' },
+          { value: tray4, name: 'Tray 4' },
+        ]
+      }
+    ]
+  };
+
+var option = {
+  tooltip: {
+      trigger: 'item',
+      show: false
+  },
+  legend: {
+      top: '5%',
+      left: 'center',
+      show:false,
+      textStyle: { //The style of the legend text
+          color: '#858d98',
+      },
+  },
+  color: chartDoughnutColors,
+  series: [{
+      name: 'Feed Quantity',
+      type: 'pie',
+      radius: ['40%', '70%'],
+      // avoidLabelOverlap: false,
+      label: {
+          show: true,
+          position: 'center',
+          fontSize: 17
+      },
+      emphasis: {
+          label: {
+              show: true,
+              fontSize: '16',
+              fontWeight: 'bold'
+          }
+      },
+      labelLine: {
+          show: true
+      },
+      data: [{
+          value: tankLevel2,
+          name: 'Feed Quantity \n\n' + tankLevel2 + " kg"
+      },
+      ]
+  }],
+  textStyle: {
+      fontFamily: 'Poppins, sans-serif'
+  },
+};
+
+  return (
+      <React.Fragment>
+          <ReactEcharts style={{ height: "350px" }} option={hasTray ? optionWithTrays : option} />
+      </React.Fragment>
+  )
+}
+
+const FeedLevelData = ({has_capacity,feedLevel,hasTray,
+  tray1,
+  tray2,
+  tray3,
+  tray4,
+  tankLevel2,
+ }) => {
+
+  return has_capacity ? (
+    <Col lg={4}>
+        <Card>
+          <CardHeader>
+            <h5 className="card-title mb-0">Feed Level</h5>
+          </CardHeader>
+          <CardBody>
+            <div className="d-flex align-items-center justify-content-center mt-1 ">
+              <div className="tank bg-white position-relative d-flex justify-content-center align-items-center">
+                <div
+                  className={
+                    "feed w-100 position-absolute bottom-0 " +
+                    (feedLevel <= 40 && feedLevel >= 20
+                      ? "bg-yellow"
+                      : feedLevel < 20
+                      ? "bg-red"
+                      : "bg-green")
+                  }
+                  style={{ height: feedLevel + "%" }} // Use feedLevel for height
+                ></div>
+                <p className="percent fs-1" id="percent">
+                  {Math.max(0, feedLevel.toFixed(0))}%
+                </p>
+              </div>
+              <div className="position-absolute">
+                <img src={tankpic} width="220px" alt="tank" height="270px" />
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </Col>
+  ) : (
+    <Col lg={4}>
+        <Card>
+          <CardHeader>
+            <h5 className="card-title mb-0">Feed Quantity</h5>
+          </CardHeader>
+          <CardBody>
+            <DoughnutChart
+            hasTray={hasTray}
+            tray1={tray1}
+            tray2={tray2}
+            tray3={tray3}
+            tray4={tray4}
+            tankLevel2={tankLevel2}
+            />
+          </CardBody>
+        </Card>
+      </Col>
+  )
+}
+
 export const FeedInfo = ({
   currentFeederId,
   feederData,
@@ -16,6 +214,14 @@ export const FeedInfo = ({
   lastDate,
   lastTime,
   feedLevel,
+  has_capacity,
+  hasTray,
+  tray1,
+  tray2,
+  tray3,
+  tray4,
+  tankLevel2,
+
 }) => {
   const { btyVolt, btyCur, temp1, hum1, temp2, hum2 } = feederData;
 
@@ -65,65 +271,18 @@ export const FeedInfo = ({
 
   return (
     <Row>
-      <Col lg={4}>
-        <Card>
-          <CardHeader>
-            <h5 className="card-title mb-0">Feed Level</h5>
-          </CardHeader>
-          <CardBody>
-            <div className="d-flex align-items-center justify-content-center mt-1 ">
-              <div className="tank bg-white position-relative d-flex justify-content-center align-items-center">
-                <div
-                  className={
-                    "feed w-100 position-absolute bottom-0 " +
-                    (feedLevel <= 40 && feedLevel >= 20
-                      ? "bg-yellow"
-                      : feedLevel < 20
-                      ? "bg-red"
-                      : "bg-green")
-                  }
-                  style={{ height: feedLevel + "%" }} // Use feedLevel for height
-                ></div>
-                <p className="percent fs-1" id="percent">
-                  {Math.max(0, feedLevel.toFixed(0))}%
-                </p>
-              </div>
-              <div className="position-absolute">
-                <img src={tankpic} width="220px" height="270px" />
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-      </Col>
+      <FeedLevelData 
+      has_capacity={has_capacity}
+      feedLevel={feedLevel}
+      hasTray={hasTray}
+      tray1={tray1}
+      tray2={tray2}
+      tray3={tray3}
+      tray4={tray4}
+      tankLevel2={tankLevel2}
+      />
       <Col lg={8}>
-        <Row>
-          {feederInfo.map(({ title, value, image }) => (
-            <Col key={title} xl={4} md={4}>
-              <Card style={{ padding: "0" }}>
-                <CardBody>
-                  <div className="d-flex align-items-center">
-                    <div className="flex-grow-1 overflow-hidden">
-                      <p className="text-uppercase mb-2">{title}</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between">
-                    <div className="align-items-center">
-                      <h6 className="fs-22 fw-semibold ff-secondary align-items-center">
-                        <span
-                          className="counter-value align-items-center"
-                          data-target="100"
-                        >
-                          {value}
-                        </span>
-                      </h6>
-                    </div>
-                    <div>{image}</div>
-                  </div>
-                </CardBody>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        
         <Row>
           <Col xl={6} md={6}>
             <Card className="last-feed text-white p-md-2">
