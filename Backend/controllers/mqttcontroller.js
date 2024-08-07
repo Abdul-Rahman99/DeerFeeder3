@@ -120,6 +120,57 @@ const ImageProcessing = async (message, filename) => {
   });
 };
 var counter = 0;
+
+async function getFeederIds() {
+  const feederIds = [];
+  try {
+    const feederData = await models.FeedingDevices.findAll({
+      attributes: ["feeder_id"],
+      raw: true,
+    });
+    feederData.forEach((feeder) => {
+      feederIds.push(feeder.feeder_id);
+    });
+    return feederIds;
+  } catch (err) {
+    console.error("Error fetching feeder IDs:", err);
+    return [];
+  }
+}
+
+getFeederIds().then((feederIds) => {
+  console.log("FEEEEEEEEEEEED:", feederIds);
+});
+
+const mainTopic = "BF";
+let myTopics = [];
+client.on("connect", function () {
+  getFeederIds()
+    .then((feederIds) => {
+      if (feederIds.length === 0) {
+        console.error("No feeder IDs found to subscribe to.");
+        return;
+      }
+
+      const topics = feederIds.map(
+        (feederId) => `${mainTopic}/${feederId}/wtsensor/status`
+      );
+      console.log("Topics:", topics);
+      myTopics = topics;
+
+      client.subscribe(topics, function (err) {
+        if (!err) {
+          console.log(`Subscribed to topics: ${topics}`);
+        } else {
+          console.error(`Failed to subscribe to topics: ${topics}`, err);
+        }
+      });
+    })
+    .catch((error) => {
+      console.error("Error in getFeederIds:", error);
+    });
+});
+
 client.on("message", async function (topic, message) {
   // called each time a message is received
 
@@ -135,10 +186,40 @@ client.on("message", async function (topic, message) {
   var topic_length = Object.keys(splited_topic).length;
   var getLastElem = splited_topic[topic_length - 1];
   var mainTopicHead = splited_topic[1];
-
-  // console.log(mainTopicHead);
-  // exit(0)
   feeder_id = splited_topic[1];
+
+  myTopics.forEach(async (element) => {
+    if (topic == element) {
+      const msgStr = message.toString();
+
+      const match = msgStr.match(/1<([^>]*)>1,2<([^>]*)>2/);
+      if (match) {
+        const value = match[2];
+        const [val1, val2, val3, val4, val5, val6, val7, val8] = value
+          .split(",")
+          .map(Number);
+
+        try {
+          await models.FeedingDevices.update(
+            {
+              Tray1: val1,
+              Tray2: val2,
+              Tray3: val3,
+              Tray4: val4,
+              feed_level2: val5 + val6 + val7 + val8,
+            },
+            { where: { feeder_id: feeder_id } }
+          );
+          console.log("FeedingDevices updated successfully.");
+        } catch (error) {
+          console.error("Error updating FeedingDevices:", error);
+        }
+      } else {
+        console.log("Could not find the values");
+      }
+      return;
+    }
+  });
 
   let cameraKey = false;
   let myCamAry = ["image", "json", "birdalert"];
@@ -389,7 +470,7 @@ client.on("message", async function (topic, message) {
           }
         } else {
           let myNewAr = JSON.parse(newAr);
-          if (myNewAr.deer_oryx_count > 0) {
+          if (myNewAr.countBirds > 0) {
             let post = {
               client_message: JSON.stringify(myNewAr),
               client_topic: getLastElem,
@@ -449,13 +530,13 @@ client.on("message", async function (topic, message) {
             const milliseconds = parseInt(value, 10);
             const seconds = milliseconds / 1000;
             let totalFeedUsedNow = 0;
-            totalFeedUsedNow += seconds * 0.4;
 
-            let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id=${feeder_id}`;
+            let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage, motor_speed FROM FeedingDevices WHERE id=${feeder_id}`;
             models.sequelize
               .query(query, { type: QueryTypes.SELECT })
               .then((results) => {
                 console.log(results);
+                totalFeedUsedNow += seconds * results[0].motor_speed;
                 const newFeedLevel = results[0].feed_level - totalFeedUsedNow;
                 const newFeedLevelPercentage =
                   (newFeedLevel / results[0].tank_capacity) * 100;
@@ -491,10 +572,10 @@ client.on("message", async function (topic, message) {
                   const milliseconds = parseInt(value, 10);
                   const seconds = milliseconds / 1000;
                   let totalFeedUsedNow = 0;
-                  totalFeedUsedNow += seconds * 0.4;
+
                   console.log("Total Feed Used Now: " + totalFeedUsedNow);
 
-                  let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage FROM FeedingDevices WHERE id = ${feeder_id}`;
+                  let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage, motor_speed FROM FeedingDevices WHERE id = ${feeder_id}`;
 
                   models.sequelize
                     .query(query, {
@@ -503,6 +584,7 @@ client.on("message", async function (topic, message) {
                     })
                     .then((results) => {
                       if (results.length > 0) {
+                        totalFeedUsedNow += seconds * results[0].motor_speed;
                         const newFeedLevel =
                           results[0].feed_level - totalFeedUsedNow;
                         const newFeedLevelPercentage =

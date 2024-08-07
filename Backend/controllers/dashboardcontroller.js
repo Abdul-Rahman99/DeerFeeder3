@@ -1,5 +1,5 @@
 const { Json } = require("sequelize/lib/utils");
-const { collectSchedules, getFeedDones } = require("../Helper");
+const { collectSchedules } = require("../Helper");
 const models = require("../models");
 const {
   Op,
@@ -9,8 +9,11 @@ const {
   INTEGER,
   query,
 } = require("sequelize");
-
-const getBirdFeedingDevices = (req, res) => {};
+const {
+  ExecuteFeedNowWT,
+  ExecuteFeedingStopCommands,
+} = require("./foodcontroller");
+const { PublishCommand } = require("../mqtt");
 
 const getFeedPercentage = async (feederId) => {
   const tankCapacity = 800; // Assuming a constant tank capacity
@@ -369,6 +372,130 @@ const refillTank = async (req, res) => {
   }
 };
 
+const getFeedLevelWtData = async (req, res) => {
+  const loggedInUserId = req.session?.user?.id;
+
+  const query = `
+    SELECT 
+      FeedingDevices.id,
+      FeedingDevices.title,  
+      FeedingDevices.location, 
+      FeedingDevices.other_info, 
+      FeedingDevices.feeder_id,
+      FeedingDevices.Tray1,
+      FeedingDevices.Tray2,
+      FeedingDevices.Tray3,
+      FeedingDevices.Tray4,
+      FeedingDevices.has_capacity,
+      FeedingDevices.feed_level_percentage as tankLevel,
+      FeedingDevices.feed_level2 as tankLevel2,
+      FeedingDevices.has_tray as has_tray,
+      FeedingDevices.has_mode3 as has_mode3,
+      FeedingDevices.mode3_status as mode3_status
+    FROM 
+      FeedingDevices 
+    INNER JOIN
+      UserDevices ON UserDevices.feeder_id = FeedingDevices.id
+    WHERE 
+      1=1 ${loggedInUserId ? `AND UserDevices.user_id = ${loggedInUserId}` : ""}
+  `;
+
+  try {
+    const records = await models.sequelize.query(query, {
+      type: QueryTypes.SELECT,
+    });
+
+    let newAr = {};
+    let LowFeedLevels = [];
+    let AllFeedLevels = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const {
+        id,
+        title,
+        location,
+        feeder_id,
+        other_info,
+        Tray1,
+        Tray2,
+        Tray3,
+        Tray4,
+        has_capacity,
+        tankLevel,
+        tankLevel2,
+        has_tray,
+        has_mode3,
+        mode3_status,
+      } = records[i];
+
+      const myNewAr = {
+        id,
+        title,
+        location,
+        feeder_id,
+        other_info,
+        Tray1,
+        Tray2,
+        Tray3,
+        Tray4,
+        has_capacity,
+        tankLevel,
+        tankLevel2,
+        has_tray,
+        has_mode3,
+        mode3_status,
+      };
+
+      newAr = {
+        all: AllFeedLevels,
+        all_c: AllFeedLevels.length,
+        low_c: LowFeedLevels.length,
+      };
+
+      AllFeedLevels.push(myNewAr);
+
+      if (tankLevel <= 30) {
+        LowFeedLevels.push(id);
+      }
+    }
+
+    newAr = {
+      all: AllFeedLevels,
+      all_c: AllFeedLevels.length,
+      low_c: LowFeedLevels.length,
+    };
+
+    res.status(200).send(newAr);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+const updateHasCapacity = async (req, res) => {
+  const feederId = req.params.feederId;
+  const hasCapacity = req.body.hasCapacity;
+
+  if (!feederId || typeof hasCapacity !== "boolean") {
+    return res.status(400).send({ message: "Invalid input" });
+  }
+
+  try {
+    const [updatedRows] = await models.FeedingDevices.update(
+      { has_capacity: hasCapacity },
+      { where: { id: feederId } }
+    );
+
+    if (updatedRows > 0) {
+      res.status(200).send({ message: "Updated successfully" });
+    } else {
+      res.status(404).send({ message: "Feeder not found" });
+    }
+  } catch (error) {
+    console.error("Update failed:", error);
+    res.status(500).send({ message: error.message });
+  }
+};
+
 module.exports = {
   getFeedLevelData,
   getFeedLocations,
@@ -376,4 +503,6 @@ module.exports = {
   getAllNotifications,
   getFeedDateTimes,
   refillTank,
+  getFeedLevelWtData,
+  updateHasCapacity,
 };
