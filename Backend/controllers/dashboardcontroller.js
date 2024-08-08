@@ -388,7 +388,7 @@ const getFeedLevelWtData = async (req, res) => {
       ROUND(FeedingDevices.Tray4,1) AS Tray4,
       FeedingDevices.has_capacity,
       FeedingDevices.feed_level_percentage as tankLevel,
-      ROUND(FeedingDevices.feed_level2) as tankLevel2,
+      ROUND(FeedingDevices.feed_level2,1) as tankLevel2,
       FeedingDevices.has_tray as has_tray,
       FeedingDevices.has_mode3 as has_mode3,
       FeedingDevices.mode3_status as mode3_status
