@@ -188,8 +188,19 @@ client.on("message", async function (topic, message) {
     if (topic == element) {
       const msgStr = message.toString();
 
+      const match0 = msgStr.match(/0<([^>]*)>0/);
+      const match1 = msgStr.match(/1<([^>]*)>1/);
       const match2 = msgStr.match(/2<([^>]*)>2/);
-      const match0 = msgStr.match(/0<([^>]*)>0,1<([^>]*)>1,2<([^>]*)>2,3<([^>]*)>3,5<([^>]*)>5,6<([^>]*)>6,7<([^>]*)>7,8<([^>]*)>8,9<([^>]*)>9,20<([^>]*)>20,21<([^>]*)>21,60<([^>]*)>60,20<([^>]*)>20/);
+      const match3 = msgStr.match(/3<([^>]*)>3/);
+      const match5 = msgStr.match(/5<([^>]*)>5/);
+      const match6 = msgStr.match(/6<([^>]*)>6/);
+      const match7 = msgStr.match(/7<([^>]*)>7/);
+      const match8 = msgStr.match(/8<([^>]*)>8/);
+      const match9 = msgStr.match(/9<([^>]*)>9/);
+      const match20 = msgStr.match(/20<([^>]*)>20/);
+      const matc21 = msgStr.match(/21<([^>]*)>21/);
+      const match60 = msgStr.match(/60<([^>]*)>60/);
+
 
       if (match2) {
         const value = match2[1];

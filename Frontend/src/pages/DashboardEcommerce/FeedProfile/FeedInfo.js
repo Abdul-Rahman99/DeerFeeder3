@@ -37,7 +37,8 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
         radius: [0, '45.5%'],
         label: {
           position: 'center',
-          fontSize: 19
+          fontSize: 19,
+          borderColor: '#000',
         },
         labelLine: {
           show: false
@@ -161,7 +162,7 @@ const FeedLevelData = ({has_capacity,feedLevel,hasTray,
  }) => {
 
   return has_capacity ? (
-    <Col lg={4}>
+    <Col lg={6}>
         <Card>
           <CardHeader>
             <h5 className="card-title mb-0">Feed Level</h5>
@@ -192,7 +193,7 @@ const FeedLevelData = ({has_capacity,feedLevel,hasTray,
         </Card>
       </Col>
   ) : (
-    <Col lg={6}>
+    <Col lg={12}>
         <Card>
           <CardHeader>
             <h5 className="card-title mb-0">Feed Quantity</h5>
@@ -287,7 +288,7 @@ export const FeedInfo = ({
       tray4={tray4}
       tankLevel2={tankLevel2}
       />
-      <Col lg={6}>
+      {/* <Col lg={6}>
         <Row>
           <Col xl={6} md={6}>
             <Card className={"next-feed text-white p-md-2"}>
@@ -325,7 +326,7 @@ export const FeedInfo = ({
             </Card>
           </Col>
         </Row>
-      </Col>
+      </Col> */}
     </Row>
   );
 };

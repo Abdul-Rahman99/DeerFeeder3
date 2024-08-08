@@ -158,24 +158,7 @@ const FeedProfile = () => {
         <EnvInfo weatherInfo={weatherInfo} deviceDetail={deviceDetail} />
         <Cameras camPic={camPic} camPic2={camPic2} />
 
-        <TankControl
-          tankCapacity={tankCapacity}
-          setTankCapacity={setTankCapacity}
-          feedPerSecond={feedPerSecond}
-          handleRefill={handleRefill}
-          feedLevel={feedLevel}
-          handleSchedulePerformed={handleSchedulePerformed}
-          feedUsed={feedUsed}
-          tray1={Tray1}
-          tray2={Tray2}
-          tray3={Tray3}
-          tray4={Tray4}
-          hasTray={hasTray}
-          tankLevel2={tankLevel2}
-          hasCapacity={hasCapacity}
-
-          currentFeederId={currentFeederId}
-        />
+        
         <FeedInfo
           lastTime={lastTime}
           lastDate={lastDate}
@@ -211,7 +194,26 @@ const FeedProfile = () => {
             }}
           />
         </PermissionGuard>
+        
         <Charts currentFeederId={currentFeederId} />
+        <TankControl
+          tankCapacity={tankCapacity}
+          setTankCapacity={setTankCapacity}
+          feedPerSecond={feedPerSecond}
+          handleRefill={handleRefill}
+          feedLevel={feedLevel}
+          handleSchedulePerformed={handleSchedulePerformed}
+          feedUsed={feedUsed}
+          tray1={Tray1}
+          tray2={Tray2}
+          tray3={Tray3}
+          tray4={Tray4}
+          hasTray={hasTray}
+          tankLevel2={tankLevel2}
+          hasCapacity={hasCapacity}
+
+          currentFeederId={currentFeederId}
+        />
         <Row>
           <SensorStatus {...feederData} />
         </Row>
