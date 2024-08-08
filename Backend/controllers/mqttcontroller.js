@@ -159,7 +159,7 @@ client.on("connect", function () {
 
       client.subscribe(topics, function (err) {
         if (!err) {
-          // console.log(`Subscribed to topics: ${topics}`);
+          console.log(`Subscribed to topics: ${topics}`);
         } else {
           console.error(`Failed to subscribe to topics: ${topics}`, err);
         }
@@ -195,7 +195,7 @@ client.on("message", async function (topic, message) {
           .split(",")
           .map(Number);
 
-          console.error("TEstttt Match :", match);
+          console.log("Match array:", match);
 
         try {
           await models.FeedingDevices.update(
