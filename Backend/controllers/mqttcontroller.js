@@ -208,7 +208,7 @@ client.on("message", async function (topic, message) {
             },
             { where: { feeder_id: feeder_id } }
           );
-          // console.log("FeedingDevices updated successfully.");
+          console.log("FeedingDevices updated successfully.");
         } catch (error) {
           console.error("Error updating FeedingDevices:", error);
         }
