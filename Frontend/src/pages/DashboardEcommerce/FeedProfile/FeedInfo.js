@@ -38,7 +38,8 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
         label: {
           position: 'center',
           fontSize: 19,
-          textBorderColor: "#000000",        },
+          textBorderColor: "#000000",
+        },
         labelLine: {
           show: false
         },
