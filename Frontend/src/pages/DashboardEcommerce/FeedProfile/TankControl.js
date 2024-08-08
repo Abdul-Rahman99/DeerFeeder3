@@ -88,6 +88,10 @@ const TankControl = ({
         {
           title: "Tank Wieght",
           value: `${tankLevel2.toFixed(2)} (Kgs)`,
+        },
+        {
+          title: "Total Feed",
+          value: `${(tray1+tray2+tray3+tray4+tankLevel2).toFixed(2)} (Kgs)`,
         }
       ] 
     } else {
