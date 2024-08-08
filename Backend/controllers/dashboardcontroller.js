@@ -446,6 +446,14 @@ const getFeedLevelWtData = async (req, res) => {
         mode3_status,
       };
 
+      (myNewAr.Tray1).toFixed(1)
+      (myNewAr.Tray2).toFixed(1)
+      (myNewAr.Tray3).toFixed(1)
+      (myNewAr.Tray4).toFixed(1)
+      (myNewAr.tankLevel2).toFixed(1)
+
+
+
       newAr = {
         all: AllFeedLevels,
         all_c: AllFeedLevels.length,
