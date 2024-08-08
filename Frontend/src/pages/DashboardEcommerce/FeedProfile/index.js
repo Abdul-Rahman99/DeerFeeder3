@@ -72,12 +72,17 @@ const FeedProfile = () => {
         if (feedLevelData) {
           setTankCapacity(800);
           setFeedLevel(feedLevelData.tankLevel ?? 0);
-          setFeedLevel2(feedLevelData.tankLevel2 < 0 ? 0 : Number(feedLevelData.tankLevel2.toFixed(1)) ?? 0);
-
-          setTray1(feedLevelData.Tray1  < 0 ? 0 : Number(feedLevelData.Tray1).toFixed(1) ?? 0);
-          setTray2(feedLevelData.Tray2  < 0 ? 0 : Number(feedLevelData.Tray2).toFixed(1) ?? 0);
-          setTray3(feedLevelData.Tray3  < 0 ? 0 : Number(feedLevelData.Tray3).toFixed(1) ?? 0);
-          setTray4(feedLevelData.Tray4  < 0 ? 0 : Number(feedLevelData.Tray4).toFixed(1) ?? 0);
+          const roundToOneDecimal = (value) => {
+            const num = Number(value);
+            return isNaN(num) ? 0 : num.toFixed(1);
+          };
+          
+          setFeedLevel2(feedLevelData.tankLevel2 < 0 ? 0 : roundToOneDecimal(feedLevelData.tankLevel2 ?? 0));
+          
+          setTray1(feedLevelData.Tray1 < 0 ? 0 : roundToOneDecimal(feedLevelData.Tray1 ?? 0));
+          setTray2(feedLevelData.Tray2 < 0 ? 0 : roundToOneDecimal(feedLevelData.Tray2 ?? 0));
+          setTray3(feedLevelData.Tray3 < 0 ? 0 : roundToOneDecimal(feedLevelData.Tray3 ?? 0));
+          setTray4(feedLevelData.Tray4 < 0 ? 0 : roundToOneDecimal(feedLevelData.Tray4 ?? 0));
           setHasCapacity(feedLevelData.has_capacity);
           setHasTray(feedLevelData.has_tray);
           setFeedUsed((feedLevelData.tankLevel * 800) / 100);
