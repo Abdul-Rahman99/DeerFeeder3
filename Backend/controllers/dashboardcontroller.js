@@ -382,10 +382,10 @@ const getFeedLevelWtData = async (req, res) => {
       FeedingDevices.location, 
       FeedingDevices.other_info, 
       FeedingDevices.feeder_id,
-      FeedingDevices.Tray1,
-      FeedingDevices.Tray2,
-      FeedingDevices.Tray3,
-      FeedingDevices.Tray4,
+      ROUND(FeedingDevices.Tray1,1),
+      ROUND(FeedingDevices.Tray2,1),
+      ROUND(FeedingDevices.Tray3,1),
+      ROUND(FeedingDevices.Tray4,1),
       FeedingDevices.has_capacity,
       FeedingDevices.feed_level_percentage as tankLevel,
       FeedingDevices.feed_level2 as tankLevel2,
@@ -446,12 +446,12 @@ const getFeedLevelWtData = async (req, res) => {
         mode3_status,
       };
 
-      console.log("dsfsdf4ds5f4ds654f65ds4ds    " , myNewAr.Tray1)
-      (myNewAr.Tray1).toFixed(1)
-      (myNewAr.Tray2).toFixed(1)
-      (myNewAr.Tray3).toFixed(1)
-      (myNewAr.Tray4).toFixed(1)
-      (myNewAr.tankLevel2).toFixed(1)
+      // console.log("dsfsdf4ds5f4ds654f65ds4ds    " , myNewAr.Tray1)
+      // (myNewAr.Tray1).toFixed(1)
+      // (myNewAr.Tray2).toFixed(1)
+      // (myNewAr.Tray3).toFixed(1)
+      // (myNewAr.Tray4).toFixed(1)
+      // (myNewAr.tankLevel2).toFixed(1)
 
 
 
