@@ -31,7 +31,7 @@ const ProcessCameraData = (topic, message) => {
       isProcessing = true;
       file.push(chunk);
       io.emit("cam-event", topic, isProcessing, chunk);
-      console.log("stream data");
+      // console.log("stream data");
     });
     readStream.on("error", (e) => {
       reject(e);
@@ -39,15 +39,15 @@ const ProcessCameraData = (topic, message) => {
 
     readStream.on("open", () => {
       isProcessing = true;
-      console.log("Stream opened");
+      // console.log("Stream opened");
     });
     readStream.on("ready", () => {
       isProcessing = true;
-      console.log("Stream ready");
+      // console.log("Stream ready");
     });
     return readStream.on("end", function () {
       // console.log('file', file); // This logs the file buffer
-      console.log("Stream end"); // This logs the file buffer
+      // console.log("Stream end"); // This logs the file buffer
       // setTimeout(() => { isProcessing = false }, 2000);
       isProcessing = false;
       io.emit("cam-event", topic, isProcessing, "");
@@ -63,7 +63,7 @@ const ProcessCameraData = (topic, message) => {
   });
 };
 const postSocketMessageCamera = (topic, message, feeder_id) => {
-  console.log("camera socket message: " + topic);
+  // console.log("camera socket message: " + topic);
 
   // io.emit("cam-event", topic, message, feeder_id)
 
@@ -139,7 +139,6 @@ async function getFeederIds() {
 }
 
 getFeederIds().then((feederIds) => {
-  console.log("FEEEEEEEEEEEED:", feederIds);
 });
 
 const mainTopic = "BF";
@@ -160,7 +159,7 @@ client.on("connect", function () {
 
       client.subscribe(topics, function (err) {
         if (!err) {
-          console.log(`Subscribed to topics: ${topics}`);
+          // console.log(`Subscribed to topics: ${topics}`);
         } else {
           console.error(`Failed to subscribe to topics: ${topics}`, err);
         }
@@ -172,9 +171,6 @@ client.on("connect", function () {
 });
 
 client.on("message", async function (topic, message) {
-  // called each time a message is received
-
-  //console.log('\nReceived message:\nTopic: ', topic, '\nMessage: ', message.toString(), '\n');
 
   var client_topic = topic;
   var client_message = message.toString();
@@ -192,12 +188,14 @@ client.on("message", async function (topic, message) {
     if (topic == element) {
       const msgStr = message.toString();
 
-      const match = msgStr.match(/1<([^>]*)>1,2<([^>]*)>2/);
+      const match = msgStr.match(/0<([^>]*)>0,1<([^>]*)>1,2<([^>]*)>2,3<([^>]*)>3,5<([^>]*)>5,6<([^>]*)>6,7<([^>]*)>7,8<([^>]*)>8,9<([^>]*)>9,20<([^>]*)>20,21<([^>]*)>21,60<([^>]*)>60,20<([^>]*)>20/);
       if (match) {
         const value = match[2];
         const [val1, val2, val3, val4, val5, val6, val7, val8] = value
           .split(",")
           .map(Number);
+
+          console.log("TEstttt Match :", match);
 
         try {
           await models.FeedingDevices.update(
@@ -210,7 +208,7 @@ client.on("message", async function (topic, message) {
             },
             { where: { feeder_id: feeder_id } }
           );
-          console.log("FeedingDevices updated successfully.");
+          // console.log("FeedingDevices updated successfully.");
         } catch (error) {
           console.error("Error updating FeedingDevices:", error);
         }
@@ -291,9 +289,9 @@ client.on("message", async function (topic, message) {
     }
   }
   if (mainTopicHead == "Video") {
-    console.log("\n\n");
-    console.log(cameraKey, getLastElem, topic_length, mainTopicHead);
-    console.log("\n\n");
+    // console.log("\n\n");
+    // console.log(cameraKey, getLastElem, topic_length, mainTopicHead);
+    // console.log("\n\n");
   }
 
   // Code for comma to replace if occur in internal data
@@ -481,7 +479,7 @@ client.on("message", async function (topic, message) {
             });
           }
         }
-        console.log("\n\n\n");
+        // console.log("\n\n\n");
       }
     } else {
       let toSkip = false;
@@ -535,7 +533,7 @@ client.on("message", async function (topic, message) {
             models.sequelize
               .query(query, { type: QueryTypes.SELECT })
               .then((results) => {
-                console.log(results);
+                // console.log(results);
                 totalFeedUsedNow += seconds * results[0].motor_speed;
                 const newFeedLevel = results[0].feed_level - totalFeedUsedNow;
                 const newFeedLevelPercentage =
@@ -550,7 +548,7 @@ client.on("message", async function (topic, message) {
           collectNotifications(getLastElem, newAr, feeder_id);
         } else if (mainTopicHead != "Video") {
           if (getLastElem == "HB") {
-            console.log("5555555555555");
+            // console.log("5555555555555");
           } else {
             let post = {
               client_message: JSON.stringify(newAr),
@@ -573,7 +571,7 @@ client.on("message", async function (topic, message) {
                   const seconds = milliseconds / 1000;
                   let totalFeedUsedNow = 0;
 
-                  console.log("Total Feed Used Now: " + totalFeedUsedNow);
+                  // console.log("Total Feed Used Now: " + totalFeedUsedNow);
 
                   let query = `SELECT id, feed_level, tank_capacity, feed_level_percentage, motor_speed FROM FeedingDevices WHERE id = ${feeder_id}`;
 
@@ -628,11 +626,11 @@ client.on("message", async function (topic, message) {
       getLastElem == "capture3" ||
       getLastElem == "capture4"
     ) {
-      console.log("\nReceived message:\nTopic: ", getLastElem, "\n");
+      // console.log("\nReceived message:\nTopic: ", getLastElem, "\n");
       postSocketMessageCamera(getLastElem, newArCapture, feeder_id);
     }
   } else {
-    console.log("\nReceived message:\nTopic: ", getLastElem, "\n");
+    // console.log("\nReceived message:\nTopic: ", getLastElem, "\n");
     postSocketMessage(getLastElem, newAr, feeder_id);
   }
 });
@@ -917,7 +915,7 @@ String.prototype.replaceAt = function (index, replacement) {
 };
 
 const publishMessage = (topic, message) => {
-  console.log("MQTT Message Arrived.", topic, message);
+  // console.log("MQTT Message Arrived.", topic, message);
   PublishCommand(topic, message);
 };
 const getServerData = async (req, res) => {
@@ -925,7 +923,7 @@ const getServerData = async (req, res) => {
   let message = req.body.message;
 
   if (topic != "") {
-    console.log("MQTT Message Arrived.", topic, message);
+    // console.log("MQTT Message Arrived.", topic, message);
 
     let splited_topic = splitStr(topic, "/");
     var topic_length = Object.keys(splited_topic).length;
@@ -1021,7 +1019,7 @@ const getAlarmNotificationsData = async (req, res) => {
 };
 const getSensorData = async (req, res) => {
   let feeder_id = req.params.feederId;
-  console.log(req.params.feederId);
+  // console.log(req.params.feederId);
   let clientcommands = await models.SensorStatus.findOne({
     where: {
       feeder_id: feeder_id,
