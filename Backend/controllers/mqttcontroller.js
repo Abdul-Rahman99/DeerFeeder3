@@ -193,8 +193,8 @@ client.on("message", async function (topic, message) {
 
       if (match2) {
         try{
-          const value = match2;
-        const [val1, val2, val3, val4, val5, val6, val7, val8] = match2
+          const value = match2[1];
+        const [val1, val2, val3, val4, val5, val6, val7, val8] = value
           .split(",")
           .map(Number);
         } catch{
