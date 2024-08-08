@@ -37,7 +37,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
         radius: [0, '45.5%'],
         label: {
           position: 'center',
-          fontSize: 19,
+          fontSize: 25,
           textBorderColor: "#000000",
           textStyle: {
             color: tankLevel2 > 20 ? "#FFF" : "#000" 
@@ -66,6 +66,8 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
           formatter: '{b|{b}：}{c}',
           backgroundColor: '#F6F8FC',
           borderColor: '#8C8D8E',
+          padding: 3,
+          fontSize: 15,
           borderWidth: 1,
           borderRadius: 4,
           rich: {
