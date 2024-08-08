@@ -48,7 +48,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
           show: false
         },
         data: [
-          { value: tankLevel2, name: tankLevel2  }
+          { value: tankLevel2, name: tankLevel2 + " kg" }
         ]
       },
       {
@@ -64,7 +64,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
           length: 30
         },
         label: {
-          formatter: '{b|{b}：}{c}',
+          formatter: '{b|{b}：}{c} kg',
           backgroundColor: '#F6F8FC',
           borderColor: '#8C8D8E',
           padding: 6,
@@ -143,7 +143,7 @@ var option = {
       },
       data: [{
           value: tankLevel2,
-          name: 'Feed Quantity \n\n' + tankLevel2
+          name: 'Feed Quantity \n\n' + tankLevel2 + " kg"
       },
       ]
   }],
@@ -202,7 +202,7 @@ const FeedLevelData = ({has_capacity,feedLevel,hasTray,
     <Col lg={12}>
         <Card>
           <CardHeader>
-            <h5 className="card-title mb-0">Feed Quantity (kg)</h5>
+            <h5 className="card-title mb-0">Feed Quantity</h5>
           </CardHeader>
           <CardBody>
             <DoughnutChart
