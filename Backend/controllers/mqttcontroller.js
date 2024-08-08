@@ -192,16 +192,10 @@ client.on("message", async function (topic, message) {
       const match0 = msgStr.match(/0<([^>]*)>0,1<([^>]*)>1,2<([^>]*)>2,3<([^>]*)>3,5<([^>]*)>5,6<([^>]*)>6,7<([^>]*)>7,8<([^>]*)>8,9<([^>]*)>9,20<([^>]*)>20,21<([^>]*)>21,60<([^>]*)>60,20<([^>]*)>20/);
 
       if (match2) {
-        try{
-          const value = match2[1];
+        const value = match2[1];
         const [val1, val2, val3, val4, val5, val6, val7, val8] = value
           .split(",")
           .map(Number);
-        } catch{
-          console.log("Match array:", match2);
-        }
-
-          console.log("procced", match2);
 
         try {
           await models.FeedingDevices.update(
