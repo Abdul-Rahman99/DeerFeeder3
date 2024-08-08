@@ -446,7 +446,7 @@ const getFeedLevelWtData = async (req, res) => {
         mode3_status,
       };
 
-      console.log(myNewAr.Tray1)
+      console.log("dsfsdf4ds5f4ds654f65ds4ds    " , myNewAr.Tray1)
       (myNewAr.Tray1).toFixed(1)
       (myNewAr.Tray2).toFixed(1)
       (myNewAr.Tray3).toFixed(1)
