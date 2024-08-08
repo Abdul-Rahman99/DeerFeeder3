@@ -19,7 +19,9 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
   tray4,
   tankLevel2,
  }) => {
-  var chartDoughnutColors = ["#399918","#F6E96B","#F6E96B","#F6E96B","#F6E96B"];
+  let mainColor = tankLevel2 > 20 ? "#399918" : tankLevel2 > 10 ? "#FFFF00" : "#FF0000";
+
+  var chartDoughnutColors = [mainColor,"#F6E96B","#F6E96B","#F6E96B","#F6E96B"];
   var optionWithTrays = {
     tooltip: {
       show: false
@@ -41,7 +43,7 @@ const DoughnutChart = ({ dataColors='["--vz-success","--vz-primary"]',hasTray,
           show: false
         },
         data: [
-          { value: tankLevel2, name: tankLevel2 + " kg", selected: true }
+          { value: tankLevel2, name: tankLevel2 + " kg" }
         ]
       },
       {

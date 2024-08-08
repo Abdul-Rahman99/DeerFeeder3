@@ -72,7 +72,7 @@ const FeedProfile = () => {
         if (feedLevelData) {
           setTankCapacity(800);
           setFeedLevel(feedLevelData.tankLevel ?? 0);
-          setFeedLevel2(feedLevelData.tankLevel2 ?? 0);
+          setFeedLevel2(feedLevelData.tankLevel2 < 0 ? 0 : feedLevelData.tankLevel2 ?? 0);
 
           setTray1(feedLevelData.Tray1  < 0 ? 0 : feedLevelData.Tray1 ?? 0);
           setTray2(feedLevelData.Tray2  < 0 ? 0 : feedLevelData.Tray2 ?? 0);
