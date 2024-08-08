@@ -195,7 +195,7 @@ client.on("message", async function (topic, message) {
           .split(",")
           .map(Number);
 
-          console.log("TEstttt Match :", match);
+          console.error("TEstttt Match :", match);
 
         try {
           await models.FeedingDevices.update(
