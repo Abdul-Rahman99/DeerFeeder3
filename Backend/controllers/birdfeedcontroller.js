@@ -339,90 +339,96 @@ const getBirdsDataForGraph = async (req, res) => {
       sdateto = datefrom;
   }
   // return res.status(200).json({ "555444444444444444444":54 });
-  const query = `
-    SELECT
-        ${timeRangeGroupByField} as time,
-        CONCAT(
-            '[',
-            GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
-            ']'
-        ) as speciesInfo,
-        (
-            SELECT
-                SUM(max_count) as totalMaxCount
-            FROM (
-                SELECT
-                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
-                    client_topic,
-                    MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
-                FROM
-                    BirdsData
-                WHERE
-                    feeder_id = ${feederId} AND
-                    client_topic IN ('Processed2json', 'Processed1json') AND
-                    createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
-                GROUP BY
-                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
-            ) as subquery
-            WHERE subquery.time = ${timeRangeGroupByField}
-            GROUP BY
-                subquery.time
-            ORDER BY
-                subquery.time ASC
-        ) as totalMaxCount
+  try {
+    const query = `
+     SELECT
+         ${timeRangeGroupByField} as time,
+         CONCAT(
+             '[',
+             GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
+             ']'
+         ) as speciesInfo,
+         (
+             SELECT
+                 SUM(max_count) as totalMaxCount
+             FROM (
+                 SELECT
+                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
+                     client_topic,
+                     MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
+                 FROM
+                     BirdsData
+                 WHERE
+                     feeder_id = ${feederId} AND
+                     client_topic IN ('Processed2json', 'Processed1json') AND
+                     createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
+                 GROUP BY
+                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
+             ) as subquery
+             WHERE subquery.time = ${timeRangeGroupByField}
+             GROUP BY
+                 subquery.time
+             ORDER BY
+                 subquery.time ASC
+         ) as totalMaxCount
+ 
+     FROM
+         BirdsData
+ 
+     WHERE
+         feeder_id = ${feederId} AND
+         client_topic in ('Processed1json', 'Processed2json') AND
+         DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
+ 
+     GROUP BY
+         time
+ 
+     ORDER BY
+         createdAt ASC
+ `;
 
-    FROM
-        BirdsData
-
-    WHERE
-        feeder_id = ${feederId} AND
-        client_topic in ('Processed1json', 'Processed2json') AND
-        DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
-
-    GROUP BY
-        time
-
-    ORDER BY
-        createdAt ASC
-`;
-
-  const birdsData = await models.sequelize.query(query, {
-    type: QueryTypes.SELECT,
-  });
-
-  // return res.status(200).json({ birdsDataCam1 });
-
-  const birdspiedata = new Map();
-  const data = new Map();
-  birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
-    // append data for pie graph
-    JSON.parse(speciesInfo)?.forEach((species_detected_arr) => {
-      species_detected_arr?.forEach((specie) => {
-        const specieCount = birdspiedata.get(specie);
-        birdspiedata.set(specie, specieCount ? specieCount + 1 : 1);
-      });
+    const birdsData = await models.sequelize.query(query, {
+      type: QueryTypes.SELECT,
     });
 
-    // append data for dot graph
-    const formatedTime = `${time}`.includes(":") ? getTimeAMPM(time) : time;
-    data.set(formatedTime, totalMaxCount);
-  });
+    // return res.status(200).json({ birdsDataCam1 });
 
-  if (birdsData !== null) {
-    const response = {
-      status: true,
-      birdspiedata: {
-        labels: Array.from(birdspiedata.keys()),
-        values: Array.from(birdspiedata.values()),
-      },
-      data: {
-        time: Array.from(data.keys()),
-        birds: Array.from(data.values()),
-      },
-    };
+    const birdspiedata = new Map();
+    const data = new Map();
+    birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
+      // append data for pie graph
+      JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
+        Object.entries(all_objs_dict).forEach(([key, value]) => {
+          if (key !== "NOT_BIRD") {
+            const spicesCount = birdspiedata.get(key) || 0;
+            birdspiedata.set(key, spicesCount + parseInt(value));
+          }
+        });
+      });
 
-    res.status(200).json(response);
-  } else res.status(200).json({ success: false });
+      // append data for dot graph
+      const formatedTime = `${time}`.includes(":") ? getTimeAMPM(time) : time;
+      data.set(formatedTime, totalMaxCount);
+    });
+
+    if (birdsData !== null) {
+      const response = {
+        status: true,
+        birdspiedata: {
+          labels: Array.from(birdspiedata.keys()),
+          values: Array.from(birdspiedata.values()),
+        },
+        data: {
+          time: Array.from(data.keys()),
+          birds: Array.from(data.values()),
+        },
+      };
+
+      res.status(200).json(response);
+    }
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
 };
 
 const getExportedData = async (req, res) => {
