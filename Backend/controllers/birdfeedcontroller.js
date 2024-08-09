@@ -344,7 +344,7 @@ const getBirdsDataForGraph = async (req, res) => {
         ${timeRangeGroupByField} as time,
         CONCAT(
             '[',
-            GROUP_CONCAT(UPPER(json_extract(client_message, '$.species_detected'))),
+            GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
             ']'
         ) as speciesInfo,
         (
@@ -354,7 +354,7 @@ const getBirdsDataForGraph = async (req, res) => {
                 SELECT
                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
                     client_topic,
-                    MAX(json_extract(client_message, '$.countBirds')) as max_count
+                    MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
                 FROM
                     BirdsData
                 WHERE
@@ -468,10 +468,10 @@ const getExportedData = async (req, res) => {
             ${timeRangeGroupByField} as time,
             CONCAT(
                 '[',
-                GROUP_CONCAT(json_extract(client_message, '$.species_detected')),
+                GROUP_CONCAT(json_extract(client_message, '$.all_objs_dict')),
                 ']'
             ) as speciesInfo,
-            MAX(json_extract(client_message, '$.countBirds')) as maxCount
+            MAX(json_extract(client_message, '$.deer_oryx_count')) as maxCount
         
         FROM
             BirdsData
