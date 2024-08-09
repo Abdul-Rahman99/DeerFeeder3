@@ -468,7 +468,7 @@ const getExportedData = async (req, res) => {
             ${timeRangeGroupByField} as time,
             CONCAT(
                 '[',
-                GROUP_CONCAT(json_extract(client_message, '$.species_detected')),
+                GROUP_CONCAT(json_extract(client_message, '$.all_objs_dict')),
                 ']'
             ) as speciesInfo,
             MAX(json_extract(client_message, '$.deer_oryx_count')) as maxCount
