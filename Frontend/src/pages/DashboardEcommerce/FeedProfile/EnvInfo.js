@@ -17,9 +17,9 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
   const { currentFeederId } = useFeedProfileMainInfo();
   const { feederData } = useFeeder(currentFeederId);
 
-  const btyVolt = feederData?.btyVolt;
-  //   const btyVolt = 14.8 - 11; // full is 14.8 and empty is 11
-  const btyVoltPer = ((btyVolt / 3.8) * 100).toFixed(0);
+  //   const btyVolt = ;
+  //  const btyVolt = 14.8 - 11; // full is 14.8 and empty is 11
+  const btyVoltPer = (((feederData?.btyVolt - 11) / 3.8) * 100)?.toFixed(0);
 
   const KelvinToCelsius = (temp) => {
     return Math.floor(temp - 273.15);
@@ -70,19 +70,19 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                         alt="fullChargingBattery"
                         style={{ width: "20px", height: "20px" }}
                       />
-                    ) : btyVoltPer <= 100 && btyVoltPer > 80 ? (
+                    ) : btyVoltPer > 80 && btyVoltPer <= 100 ? (
                       <img
                         src={fullBattery}
                         alt="fullBattery"
                         style={{ width: "20px", height: "20px" }}
                       />
-                    ) : btyVoltPer <= 80 && btyVoltPer > 50 ? (
+                    ) : btyVoltPer > 50 && btyVoltPer <= 80 ? (
                       <img
                         src={halfBattery}
                         alt="halfBattery"
                         style={{ width: "20px", height: "20px" }}
                       />
-                    ) : btyVoltPer <= 50 && btyVoltPer > 20 ? (
+                    ) : btyVoltPer > 20 && btyVoltPer <= 50 ? (
                       <img
                         src={lowBattery}
                         alt="lowBattery"
@@ -96,7 +96,7 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                       />
                     )}
                     &nbsp;&nbsp;&nbsp;
-                    {btyVoltPer}%
+                    {btyVoltPer <= 0 ? 0 : btyVoltPer} %
                   </p>
                 </div>
                 <div className="col-auto">
@@ -107,7 +107,7 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                         alt="solarDonepic"
                         style={{ width: "20px", height: "20px" }}
                       />
-                    ) : btyVoltPer <= 100 && btyVoltPer > 30 ? (
+                    ) : btyVoltPer > 30 && btyVoltPer <= 100 ? (
                       <img
                         src={solarChargingpic}
                         alt="solarChargingpic"

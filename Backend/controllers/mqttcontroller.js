@@ -138,8 +138,7 @@ async function getFeederIds() {
   }
 }
 
-getFeederIds().then((feederIds) => {
-});
+getFeederIds().then((feederIds) => {});
 
 const mainTopic = "BF";
 let myTopics = [];
@@ -171,7 +170,6 @@ client.on("connect", function () {
 });
 
 client.on("message", async function (topic, message) {
-
   var client_topic = topic;
   var client_message = message.toString();
   var feeder_id;
@@ -200,7 +198,6 @@ client.on("message", async function (topic, message) {
       const match20 = msgStr.match(/20<([^>]*)>20/);
       const matc21 = msgStr.match(/21<([^>]*)>21/);
       const match60 = msgStr.match(/60<([^>]*)>60/);
-
 
       if (match2) {
         const value = match2[1];
@@ -1049,10 +1046,185 @@ const getSensorData = async (req, res) => {
     res.status(200).json({ success: false });
   }
 };
+
+const getSensorDataForChart = async (req, res) => {
+  try {
+    const feederId = req.params.feederId;
+    let sfilter = req.params.sfilter || "Daily";
+    let sdatefrom = req.params.datefrom;
+
+    if (!feederId) {
+      return res.status(400).send({ error: "Feeder ID is required" });
+    }
+
+    const today = moment().tz("Asia/Dubai").startOf("day");
+    sdatefrom = sdatefrom ? moment.tz(sdatefrom, "Asia/Dubai") : today;
+
+    let selectCmd = "",
+      groupCmd = "",
+      orderCmd = "";
+    let duration_diff = 0;
+
+    switch (sfilter) {
+      case "Daily":
+        selectCmd = " HOUR(createdAt) as timeperiod, ";
+        groupCmd = " HOUR(createdAt)";
+        orderCmd = "ORDER BY HOUR(createdAt)";
+        duration_diff = 24;
+        break;
+      case "Weekly":
+        selectCmd =
+          " CONCAT(DAYNAME(createdAt), ' ', HOUR(createdAt)) as timeperiod, ";
+        groupCmd = " DAY(createdAt), HOUR(createdAt)";
+        orderCmd = "ORDER BY DAY(createdAt), HOUR(createdAt)";
+        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asDays();
+        break;
+      case "Monthly":
+        selectCmd =
+          " CONCAT(DAY(createdAt), ' ', HOUR(createdAt)) as timeperiod, ";
+        groupCmd = " DAY(createdAt), HOUR(createdAt)";
+        orderCmd = "ORDER BY DAY(createdAt), HOUR(createdAt)";
+        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asDays();
+        break;
+      case "Yearly":
+        selectCmd =
+          " CONCAT(MONTHNAME(createdAt), ' ', DAY(createdAt)) as timeperiod, ";
+        groupCmd = " MONTH(createdAt), DAY(createdAt)";
+        orderCmd = "ORDER BY MONTH(createdAt), DAY(createdAt)";
+        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asMonths();
+        break;
+      default:
+        sfilter = "Daily";
+        selectCmd = " HOUR(createdAt) as timeperiod, ";
+        groupCmd = " HOUR(createdAt)";
+        orderCmd = "ORDER BY HOUR(createdAt)";
+        duration_diff = 24;
+        break;
+    }
+
+    let myLabels = [];
+    let temp1Values = [];
+    let temp2Values = [];
+    let hum1Values = [];
+    let hum2Values = [];
+    let queries = [];
+
+    if (sfilter === "Daily") {
+      for (let i = 0; i < duration_diff; i++) {
+        let moment_date = sdatefrom
+          .clone()
+          .add(i, "hours")
+          .format("YYYY-MM-DD HH:00:00");
+        const query = `
+          SELECT client_message
+          FROM sensorstatuses
+          WHERE feeder_id = '${feederId}' 
+          AND DATE_FORMAT(createdAt, '%Y-%m-%d %H:00:00') = '${moment_date}'
+        `;
+
+        let hourLabel = sdatefrom
+          .clone()
+          .add(i, "hours")
+          .format("YYYY-MM-DD HH:00");
+        myLabels.push(hourLabel);
+
+        queries.push(
+          models.sequelize.query(query, { type: QueryTypes.SELECT })
+        );
+      }
+
+      (await Promise.all(queries)).forEach((records) => {
+        let temp1 = 0,
+          temp2 = 0,
+          hum1 = 0,
+          hum2 = 0,
+          count = 0;
+        if (records) {
+          records.forEach((record) => {
+            let data = JSON.parse(record.client_message);
+            temp1 += parseFloat(data["1"]);
+            hum1 += parseFloat(data["2"]);
+            temp2 += parseFloat(data["3"]);
+            hum2 += parseFloat(data["4"]);
+            count++;
+          });
+        }
+        temp1Values.push(count ? Math.round(temp1 / count) : 0);
+        temp2Values.push(count ? Math.round(temp2 / count) : 0);
+        hum1Values.push(count ? Math.round(hum1 / count) : 0);
+        hum2Values.push(count ? Math.round(hum2 / count) : 0);
+      });
+
+      res.status(200).send({
+        data: {
+          temp1: temp1Values,
+          temp2: temp2Values,
+          hum1: hum1Values,
+          hum2: hum2Values,
+        },
+        labels: myLabels,
+      });
+    } else {
+      const query = `
+        SELECT ${selectCmd} AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND DATE(createdAt) BETWEEN '${sdatefrom.format("YYYY-MM-DD")}
+        GROUP BY ${groupCmd}
+        ${orderCmd}
+      `;
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records) {
+        records.forEach((val) => {
+          let timeperiod = val.timeperiod;
+          let temp1 = val.temp1;
+          let temp2 = val.temp2;
+          let hum1 = val.hum1;
+          let hum2 = val.hum2;
+          myLabels.push(timeperiod);
+          temp1Values.push(temp1);
+          temp2Values.push(temp2);
+          hum1Values.push(hum1);
+          hum2Values.push(hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    }
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
 module.exports = {
   getSensorData,
   getServerData,
   getVoltCurrentData,
   getAlarmNotificationsData,
   getAllNotificationsList,
+  getSensorDataForChart,
 };
