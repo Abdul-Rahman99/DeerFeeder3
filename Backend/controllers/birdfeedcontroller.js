@@ -398,8 +398,8 @@ const getBirdsDataForGraph = async (req, res) => {
     birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
       // append data for pie graph
       JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
-        Object.keys(all_objs_dict).forEach(([key]) => {
-          if (key !== "BIRD") {
+        Object.entries(all_objs_dict).forEach(([key]) => {
+          if (key !== "BIRD" || key !== "NOT_BIRD") {
             const spicesCount = birdspiedata.get(key) || 0;
             birdspiedata.set(key, spicesCount + all_objs_dict[key]);
           }
