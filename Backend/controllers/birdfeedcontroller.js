@@ -401,7 +401,7 @@ const getBirdsDataForGraph = async (req, res) => {
         Object.entries(all_objs_dict).forEach(([key, value]) => {
           if (key !== "BIRD") {
             const spicesCount = birdspiedata.get(key) || 0;
-            birdspiedata.set(key, spicesCount + parseInt(value));
+            birdspiedata.set(key, spicesCount + all_objs_dict[key]);
           }
         });
       });
