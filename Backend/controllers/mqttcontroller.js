@@ -225,12 +225,11 @@ client.on("message", async function (topic, message) {
         }
 
         try {
-          await models.WtSensors.create(
-            {
-              Wieghts: value,
-              FeederId: feeder_id 
-            }            
-          );
+          let payload= {
+            Wieghts: value,
+            FeederId: feeder_id 
+          }  
+          await models.WtSensors.create(payload);
           console.log("weights updated successfully.");
         } catch (error) {
           console.error("Error updating weights:", error);
