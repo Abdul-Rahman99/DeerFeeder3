@@ -223,6 +223,20 @@ client.on("message", async function (topic, message) {
         } catch (error) {
           console.error("Error updating FeedingDevices:", error);
         }
+
+        try {
+          await models.WtSensors.create(
+            {
+              Wieghts: value,
+              FeederId: feeder_id 
+            },
+            
+          );
+          console.log("weights updated successfully.");
+        } catch (error) {
+          console.error("Error updating weights:", error);
+        }
+
       } else {
         console.log("Could not find the values");
       }
