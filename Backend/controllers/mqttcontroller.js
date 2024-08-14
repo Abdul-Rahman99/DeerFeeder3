@@ -232,7 +232,7 @@ client.on("message", async function (topic, message) {
           await models.WtSensors.create(payload);
           console.log("weights updated successfully.");
         } catch (error) {
-          console.error("Error updating weights:", error);
+          console.error("Error updating weights: ", error.message);
         }
 
       } else {
