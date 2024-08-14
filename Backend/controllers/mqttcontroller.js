@@ -229,8 +229,7 @@ client.on("message", async function (topic, message) {
             {
               Wieghts: value,
               FeederId: feeder_id 
-            },
-            
+            }            
           );
           console.log("weights updated successfully.");
         } catch (error) {
