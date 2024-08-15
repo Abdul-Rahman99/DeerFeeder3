@@ -1106,7 +1106,7 @@ const getSensorDataForChart = async (req, res) => {
 
         const query = `
           SELECT client_message
-          FROM sensorstatuses
+          FROM SensorStatuses
           WHERE feeder_id = '${feederId}' 
           AND createdAt >= '${moment_date}' AND createdAt < '${moment(
           moment_date
