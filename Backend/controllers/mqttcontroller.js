@@ -1046,7 +1046,6 @@ const getSensorData = async (req, res) => {
     res.status(200).json({ success: false });
   }
 };
-
 const getSensorDataForChart = async (req, res) => {
   try {
     const feederId = req.params.feederId;
@@ -1073,25 +1072,13 @@ const getSensorDataForChart = async (req, res) => {
         duration_diff = 24;
         break;
       case "Weekly":
-        selectCmd =
-          " CONCAT(DAYNAME(createdAt), ' ', HOUR(createdAt)) as timeperiod, ";
-        groupCmd = " DAY(createdAt), HOUR(createdAt)";
-        orderCmd = "ORDER BY DAY(createdAt), HOUR(createdAt)";
-        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asDays();
+        duration_diff = 7;
         break;
       case "Monthly":
-        selectCmd =
-          " CONCAT(DAY(createdAt), ' ', HOUR(createdAt)) as timeperiod, ";
-        groupCmd = " DAY(createdAt), HOUR(createdAt)";
-        orderCmd = "ORDER BY DAY(createdAt), HOUR(createdAt)";
-        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asDays();
+        duration_diff = moment().daysInMonth();
         break;
       case "Yearly":
-        selectCmd =
-          " CONCAT(MONTHNAME(createdAt), ' ', DAY(createdAt)) as timeperiod, ";
-        groupCmd = " MONTH(createdAt), DAY(createdAt)";
-        orderCmd = "ORDER BY MONTH(createdAt), DAY(createdAt)";
-        duration_diff = moment.duration(sdateto.diff(sdatefrom)).asMonths();
+        duration_diff = 12;
         break;
       default:
         sfilter = "Daily";
@@ -1110,17 +1097,24 @@ const getSensorDataForChart = async (req, res) => {
     let queries = [];
 
     if (sfilter === "Daily") {
+      // Generate time periods for the whole day (24 hours)
       for (let i = 0; i < duration_diff; i++) {
         let moment_date = sdatefrom
           .clone()
           .add(i, "hours")
           .format("YYYY-MM-DD HH:00:00");
+
         const query = `
           SELECT client_message
           FROM sensorstatuses
           WHERE feeder_id = '${feederId}' 
-          AND DATE_FORMAT(createdAt, '%Y-%m-%d %H:00:00') = '${moment_date}'
-        `;
+          AND createdAt >= '${moment_date}' AND createdAt < '${moment(
+          moment_date
+        )
+          .add(1, "hours")
+          .format("YYYY-MM-DD HH:00:00")}' 
+          ORDER BY createdAt ASC 
+          LIMIT 1;`;
 
         let hourLabel = sdatefrom
           .clone()
@@ -1133,28 +1127,62 @@ const getSensorDataForChart = async (req, res) => {
         );
       }
 
-      (await Promise.all(queries)).forEach((records) => {
+      const recordsArray = await Promise.all(queries);
+
+      for (let i = 0; i < recordsArray.length; i++) {
         let temp1 = 0,
           temp2 = 0,
           hum1 = 0,
-          hum2 = 0,
-          count = 0;
-        if (records) {
-          records.forEach((record) => {
-            let data = JSON.parse(record.client_message);
-            temp1 += parseFloat(data["1"]);
-            hum1 += parseFloat(data["2"]);
-            temp2 += parseFloat(data["3"]);
-            hum2 += parseFloat(data["4"]);
-            count++;
-          });
-        }
-        temp1Values.push(count ? Math.round(temp1 / count) : 0);
-        temp2Values.push(count ? Math.round(temp2 / count) : 0);
-        hum1Values.push(count ? Math.round(hum1 / count) : 0);
-        hum2Values.push(count ? Math.round(hum2 / count) : 0);
-      });
+          hum2 = 0;
 
+        const records = recordsArray[i];
+
+        if (records.length > 0) {
+          let data = JSON.parse(records[0].client_message);
+          temp1 = parseFloat(data["1"]);
+          hum1 = parseFloat(data["2"]);
+          temp2 = parseFloat(data["3"]);
+          hum2 = parseFloat(data["4"]);
+        } else {
+          // atttempt to get the next available value if current hour value is null
+          for (let j = 1; j <= 5; j++) {
+            let nextMoment = sdatefrom
+              .clone()
+              .add(i, "hours")
+              .add(j * 10, "minutes")
+              .format("YYYY-MM-DD HH:mm:ss");
+
+            const nextQuery = `
+              SELECT client_message
+              FROM sensorstatuses
+              WHERE feeder_id = '${feederId}' 
+              AND createdAt >= '${nextMoment}' AND createdAt < '${moment(
+              nextMoment
+            )
+              .add(10, "minutes")
+              .format("YYYY-MM-DD HH:mm:ss")}' 
+              ORDER BY createdAt ASC 
+              LIMIT 1;`;
+
+            const nextRecords = await models.sequelize.query(nextQuery, {
+              type: QueryTypes.SELECT,
+            });
+
+            if (nextRecords.length > 0) {
+              let data = JSON.parse(nextRecords[0].client_message);
+              temp1 = parseFloat(data["1"]);
+              hum1 = parseFloat(data["2"]);
+              temp2 = parseFloat(data["3"]);
+              hum2 = parseFloat(data["4"]);
+              break;
+            }
+          }
+        }
+        temp1Values.push(temp1);
+        temp2Values.push(temp2);
+        hum1Values.push(hum1);
+        hum2Values.push(hum2);
+      }
       res.status(200).send({
         data: {
           temp1: temp1Values,
@@ -1164,34 +1192,35 @@ const getSensorDataForChart = async (req, res) => {
         },
         labels: myLabels,
       });
-    } else {
+    } else if (sfilter === "Weekly") {
       const query = `
-        SELECT ${selectCmd} AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+        SELECT 
+          DAYNAME(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
         FROM sensorstatuses
         WHERE feeder_id = '${feederId}' 
-        AND DATE(createdAt) BETWEEN '${sdatefrom.format("YYYY-MM-DD")}
-        GROUP BY ${groupCmd}
-        ${orderCmd}
-      `;
+        AND DATE(createdAt) BETWEEN '${sdatefrom
+          .clone()
+          .startOf("week")
+          .format("YYYY-MM-DD")}' 
+        AND '${sdatefrom.clone().endOf("week").format("YYYY-MM-DD")}'
+        GROUP BY DAY(createdAt)
+        ORDER BY DAY(createdAt);`;
+
       const records = await models.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
 
-      if (records) {
+      if (records.length > 0) {
         records.forEach((val) => {
-          let timeperiod = val.timeperiod;
-          let temp1 = val.temp1;
-          let temp2 = val.temp2;
-          let hum1 = val.hum1;
-          let hum2 = val.hum2;
-          myLabels.push(timeperiod);
-          temp1Values.push(temp1);
-          temp2Values.push(temp2);
-          hum1Values.push(hum1);
-          hum2Values.push(hum2);
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
         });
 
         res.status(200).send({
@@ -1214,6 +1243,103 @@ const getSensorDataForChart = async (req, res) => {
           labels: [],
         });
       }
+    } else if (sfilter === "Monthly") {
+      const query = `
+        SELECT 
+          DAY(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND MONTH(createdAt) = ${sdatefrom.format("M")}
+        AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
+        GROUP BY DAY(createdAt)
+        ORDER BY DAY(createdAt);`;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records.length > 0) {
+        records.forEach((val) => {
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    } else if (sfilter === "Yearly") {
+      const query = `
+        SELECT 
+          MONTHNAME(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
+        GROUP BY MONTH(createdAt)
+        ORDER BY MONTH(createdAt);`;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records.length > 0) {
+        records.forEach((val) => {
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    } else {
+      res.status(400).send({ message: "Invalid filter selected" });
     }
   } catch (error) {
     res.status(500).send({ message: error.message });

@@ -1,6 +1,6 @@
 import { Col, Row } from "reactstrap";
 import React from "react";
-import { useFeeder, useFeedProfileMainInfo } from "./hooks";
+import { useFeeder, useFeedProfileMainInfo, useSocket } from "./hooks";
 import {
   solarChargingpic,
   solarFailedpic,
@@ -13,12 +13,7 @@ import {
   lowBattery,
 } from "../../../assets/images";
 
-export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
-  const { currentFeederId } = useFeedProfileMainInfo();
-  const { feederData } = useFeeder(currentFeederId);
-
-  //   const btyVolt = ;
-  //  const btyVolt = 14.8 - 11; // full is 14.8 and empty is 11
+export const EnvInfo = ({ deviceDetail, weatherInfo, feederData }) => {
   const btyVoltPer = (((feederData?.btyVolt - 11) / 3.8) * 100)?.toFixed(0);
 
   const KelvinToCelsius = (temp) => {
@@ -38,14 +33,16 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                 <div className="col-auto">
                   <p className="btn mybtn mybtn-1">
                     <i className="ri-map-pin-fill align-middle me-1"></i>{" "}
-                    Environment
+                    Location
                   </p>
                   <p className="btn mybtn mybtn-2">
                     <i className="ri-temp-hot-line align-middle me-1"></i>
-                    {KelvinToCelsius(weatherInfo?.main?.temp)}&deg;c
-                    &nbsp;&nbsp;&nbsp;
+                    {/* {KelvinToCelsius(weatherInfo?.main?.temp)}&deg;c */}
+                    {/* &nbsp;&nbsp;&nbsp; */}
+                    {feederData?.temp1}&deg;c &nbsp;&nbsp;&nbsp;
                     <i className="ri-water-flash-fill align-middle me-1"></i>
-                    {weatherInfo?.main?.humidity}%
+                    {/* {weatherInfo?.main?.humidity}% */}
+                    {feederData?.hum1}%
                   </p>
                 </div>
                 <div className="col-auto">
@@ -56,20 +53,16 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                     <i className="ri-temp-hot-line align-middle me-1"></i>
                     {/* {KelvinToCelsius(weatherInfo?.main?.temp)}&deg;c
                     &nbsp;&nbsp;&nbsp; */}
-                    {feederData.temp1}&deg;c &nbsp;&nbsp;&nbsp;
+                    {feederData.temp2}&deg;c &nbsp;&nbsp;&nbsp;
                     <i className="ri-water-flash-fill align-middle me-1"></i>
                     {/* {weatherInfo?.main?.humidity}% */}
-                    {feederData.hum1}%
+                    {feederData.hum2}%
                   </p>
                 </div>
                 <div className="col-auto">
                   <p className="btn mybtn mybtn-1">
                     {btyVoltPer > 100 ? (
-                      <img
-                        src={fullChargingBattery}
-                        alt="fullChargingBattery"
-                        style={{ width: "20px", height: "20px" }}
-                      />
+                      <span>Charging</span>
                     ) : btyVoltPer > 80 && btyVoltPer <= 100 ? (
                       <img
                         src={fullBattery}
@@ -96,7 +89,13 @@ export const EnvInfo = ({ deviceDetail, weatherInfo }) => {
                       />
                     )}
                     &nbsp;&nbsp;&nbsp;
-                    {btyVoltPer <= 0 ? 0 : btyVoltPer} %
+                    {/* {btyVoltPer <= 0 ? 0 : btyVoltPer} % */}
+                    {btyVoltPer > 100
+                      ? "100"
+                      : btyVoltPer <= 0
+                      ? 0
+                      : btyVoltPer}{" "}
+                    %
                   </p>
                 </div>
                 <div className="col-auto">

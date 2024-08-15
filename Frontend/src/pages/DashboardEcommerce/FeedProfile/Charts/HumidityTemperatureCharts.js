@@ -33,8 +33,6 @@ export const HumidityTemperatureCharts = () => {
       );
 
       setFeederData(response);
-   
-  
     } catch (error) {
       setMyGraphLoader(false);
 
@@ -81,9 +79,7 @@ export const HumidityTemperatureCharts = () => {
           <CardHeader>
             <Row>
               <Col lg={4}>
-                <h5 className="card-title mb-0">
-                  Humidity and Temperature Inside Device by Day
-                </h5>
+                <h5 className="card-title mb-0">Feed Heat Index</h5>
               </Col>
               <Col
                 lg={8}
@@ -170,9 +166,7 @@ export const HumidityTemperatureCharts = () => {
           <CardHeader>
             <Row>
               <Col lg={4}>
-                <h5 className="card-title mb-0">
-                  Humidity and Temperature Outside Device by Day
-                </h5>
+                <h5 className="card-title mb-0">Location Heat Index</h5>
               </Col>
               <Col lg={8} className="d-flex justify-content-end">
                 <Row>

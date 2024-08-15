@@ -341,51 +341,51 @@ const getBirdsDataForGraph = async (req, res) => {
   // return res.status(200).json({ "555444444444444444444":54 });
   try {
     const query = `
-     SELECT
-         ${timeRangeGroupByField} as time,
-         CONCAT(
-             '[',
-             GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
-             ']'
-         ) as speciesInfo,
-         (
-             SELECT
-                 SUM(max_count) as totalMaxCount
-             FROM (
-                 SELECT
-                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
-                     client_topic,
-                     MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
-                 FROM
-                     BirdsData
-                 WHERE
-                     feeder_id = ${feederId} AND
-                     client_topic IN ('Processed2json', 'Processed1json') AND
-                     createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
-                 GROUP BY
-                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
-             ) as subquery
-             WHERE subquery.time = ${timeRangeGroupByField}
-             GROUP BY
-                 subquery.time
-             ORDER BY
-                 subquery.time ASC
-         ) as totalMaxCount
- 
-     FROM
-         BirdsData
- 
-     WHERE
-         feeder_id = ${feederId} AND
-         client_topic in ('Processed1json', 'Processed2json') AND
-         DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
- 
-     GROUP BY
-         time
- 
-     ORDER BY
-         createdAt ASC
- `;
+    SELECT
+        ${timeRangeGroupByField} as time,
+        CONCAT(
+            '[',
+            GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
+            ']'
+        ) as speciesInfo,
+        (
+            SELECT
+                SUM(max_count) as totalMaxCount
+            FROM (
+                SELECT
+                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
+                    client_topic,
+                    MAX(json_extract(client_message, '$.countBirds')) as max_count
+                FROM
+                    BirdsData
+                WHERE
+                    feeder_id = ${feederId} AND
+                    client_topic IN ('Processed2json', 'Processed1json') AND
+                    createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
+                GROUP BY
+                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
+            ) as subquery
+            WHERE subquery.time = ${timeRangeGroupByField}
+            GROUP BY
+                subquery.time
+            ORDER BY
+                subquery.time ASC
+        ) as totalMaxCount
+
+    FROM
+        BirdsData
+
+    WHERE
+        feeder_id = ${feederId} AND
+        client_topic in ('Processed1json', 'Processed2json') AND
+        DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
+
+    GROUP BY
+        time
+
+    ORDER BY
+        createdAt ASC
+`;
 
     const birdsData = await models.sequelize.query(query, {
       type: QueryTypes.SELECT,
@@ -396,17 +396,18 @@ const getBirdsDataForGraph = async (req, res) => {
     const birdspiedata = new Map();
     const data = new Map();
     birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
-      // append data for pie graph
+      // Append data for pie graph
       JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
-        Object.entries(all_objs_dict).forEach(([key, value]) => {
-          if (key !== "BIRD") {
-            const spicesCount = birdspiedata.get(key);
-            birdspiedata.set(key, spicesCount + parseInt(value));
+        Object.entries(all_objs_dict).forEach(([key, count]) => {
+          if (key === "BIRD") {
+            key = "DEER";
           }
+          const specieCount = birdspiedata.get(key) || 0;
+          birdspiedata.set(key, specieCount + count);
         });
       });
 
-      // append data for dot graph
+      // Append data for dot graph
       const formatedTime = `${time}`.includes(":") ? getTimeAMPM(time) : time;
       data.set(formatedTime, totalMaxCount);
     });
