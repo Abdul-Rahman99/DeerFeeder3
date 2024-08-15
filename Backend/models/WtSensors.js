@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const WtSensors = sequelize.define("WtSensors ", {
+    const WtSensors = sequelize.define("WtSensors", {
         MessageType: {
             type: DataTypes.TEXT,
             allowNull: true,
