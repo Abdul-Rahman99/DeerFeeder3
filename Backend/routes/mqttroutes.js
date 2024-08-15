@@ -19,6 +19,7 @@ const {
   getVoltCurrentData,
   getAlarmNotificationsData,
   getAllNotificationsList,
+  getSensorDataForChart,
 } = require("../controllers/mqttcontroller.js");
 const {
   login,
@@ -253,5 +254,10 @@ router.post("/api/refill-tank/:feederId", refillTank);
 
 router.get("/api/getFeedLevelWtData", sessionMiddleware, getFeedLevelWtData);
 router.put("/api/updateHasCapacity/:feederId", updateHasCapacity);
+
+router.get(
+  "/api/getSensorDataForChart/:feederId/:datefrom?/:sfilter?",
+  getSensorDataForChart
+);
 
 module.exports = router;

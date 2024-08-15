@@ -138,8 +138,7 @@ async function getFeederIds() {
   }
 }
 
-getFeederIds().then((feederIds) => {
-});
+getFeederIds().then((feederIds) => {});
 
 const mainTopic = "BF";
 let myTopics = [];
@@ -171,7 +170,6 @@ client.on("connect", function () {
 });
 
 client.on("message", async function (topic, message) {
-
   var client_topic = topic;
   var client_message = message.toString();
   var feeder_id;
@@ -200,7 +198,6 @@ client.on("message", async function (topic, message) {
       const match20 = msgStr.match(/20<([^>]*)>20/);
       const matc21 = msgStr.match(/21<([^>]*)>21/);
       const match60 = msgStr.match(/60<([^>]*)>60/);
-
 
       if (match2) {
         const value = match2[1];
@@ -1061,10 +1058,311 @@ const getSensorData = async (req, res) => {
     res.status(200).json({ success: false });
   }
 };
+const getSensorDataForChart = async (req, res) => {
+  try {
+    const feederId = req.params.feederId;
+    let sfilter = req.params.sfilter || "Daily";
+    let sdatefrom = req.params.datefrom;
+
+    if (!feederId) {
+      return res.status(400).send({ error: "Feeder ID is required" });
+    }
+
+    const today = moment().tz("Asia/Dubai").startOf("day");
+    sdatefrom = sdatefrom ? moment.tz(sdatefrom, "Asia/Dubai") : today;
+
+    let selectCmd = "",
+      groupCmd = "",
+      orderCmd = "";
+    let duration_diff = 0;
+
+    switch (sfilter) {
+      case "Daily":
+        selectCmd = " HOUR(createdAt) as timeperiod, ";
+        groupCmd = " HOUR(createdAt)";
+        orderCmd = "ORDER BY HOUR(createdAt)";
+        duration_diff = 24;
+        break;
+      case "Weekly":
+        duration_diff = 7;
+        break;
+      case "Monthly":
+        duration_diff = moment().daysInMonth();
+        break;
+      case "Yearly":
+        duration_diff = 12;
+        break;
+      default:
+        sfilter = "Daily";
+        selectCmd = " HOUR(createdAt) as timeperiod, ";
+        groupCmd = " HOUR(createdAt)";
+        orderCmd = "ORDER BY HOUR(createdAt)";
+        duration_diff = 24;
+        break;
+    }
+
+    let myLabels = [];
+    let temp1Values = [];
+    let temp2Values = [];
+    let hum1Values = [];
+    let hum2Values = [];
+    let queries = [];
+
+    if (sfilter === "Daily") {
+      // Generate time periods for the whole day (24 hours)
+      for (let i = 0; i < duration_diff; i++) {
+        let moment_date = sdatefrom
+          .clone()
+          .add(i, "hours")
+          .format("YYYY-MM-DD HH:00:00");
+
+        const query = `
+          SELECT client_message
+          FROM sensorstatuses
+          WHERE feeder_id = '${feederId}' 
+          AND createdAt >= '${moment_date}' AND createdAt < '${moment(
+          moment_date
+        )
+          .add(1, "hours")
+          .format("YYYY-MM-DD HH:00:00")}' 
+          ORDER BY createdAt ASC 
+          LIMIT 1;`;
+
+        let hourLabel = sdatefrom
+          .clone()
+          .add(i, "hours")
+          .format("YYYY-MM-DD HH:00");
+        myLabels.push(hourLabel);
+
+        queries.push(
+          models.sequelize.query(query, { type: QueryTypes.SELECT })
+        );
+      }
+
+      const recordsArray = await Promise.all(queries);
+
+      for (let i = 0; i < recordsArray.length; i++) {
+        let temp1 = 0,
+          temp2 = 0,
+          hum1 = 0,
+          hum2 = 0;
+
+        const records = recordsArray[i];
+
+        if (records.length > 0) {
+          let data = JSON.parse(records[0].client_message);
+          temp1 = parseFloat(data["1"]);
+          hum1 = parseFloat(data["2"]);
+          temp2 = parseFloat(data["3"]);
+          hum2 = parseFloat(data["4"]);
+        } else {
+          // atttempt to get the next available value if current hour value is null
+          for (let j = 1; j <= 5; j++) {
+            let nextMoment = sdatefrom
+              .clone()
+              .add(i, "hours")
+              .add(j * 10, "minutes")
+              .format("YYYY-MM-DD HH:mm:ss");
+
+            const nextQuery = `
+              SELECT client_message
+              FROM sensorstatuses
+              WHERE feeder_id = '${feederId}' 
+              AND createdAt >= '${nextMoment}' AND createdAt < '${moment(
+              nextMoment
+            )
+              .add(10, "minutes")
+              .format("YYYY-MM-DD HH:mm:ss")}' 
+              ORDER BY createdAt ASC 
+              LIMIT 1;`;
+
+            const nextRecords = await models.sequelize.query(nextQuery, {
+              type: QueryTypes.SELECT,
+            });
+
+            if (nextRecords.length > 0) {
+              let data = JSON.parse(nextRecords[0].client_message);
+              temp1 = parseFloat(data["1"]);
+              hum1 = parseFloat(data["2"]);
+              temp2 = parseFloat(data["3"]);
+              hum2 = parseFloat(data["4"]);
+              break;
+            }
+          }
+        }
+        temp1Values.push(temp1);
+        temp2Values.push(temp2);
+        hum1Values.push(hum1);
+        hum2Values.push(hum2);
+      }
+      res.status(200).send({
+        data: {
+          temp1: temp1Values,
+          temp2: temp2Values,
+          hum1: hum1Values,
+          hum2: hum2Values,
+        },
+        labels: myLabels,
+      });
+    } else if (sfilter === "Weekly") {
+      const query = `
+        SELECT 
+          DAYNAME(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND DATE(createdAt) BETWEEN '${sdatefrom
+          .clone()
+          .startOf("week")
+          .format("YYYY-MM-DD")}' 
+        AND '${sdatefrom.clone().endOf("week").format("YYYY-MM-DD")}'
+        GROUP BY DAY(createdAt)
+        ORDER BY DAY(createdAt);`;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records.length > 0) {
+        records.forEach((val) => {
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    } else if (sfilter === "Monthly") {
+      const query = `
+        SELECT 
+          DAY(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND MONTH(createdAt) = ${sdatefrom.format("M")}
+        AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
+        GROUP BY DAY(createdAt)
+        ORDER BY DAY(createdAt);`;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records.length > 0) {
+        records.forEach((val) => {
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    } else if (sfilter === "Yearly") {
+      const query = `
+        SELECT 
+          MONTHNAME(createdAt) as timeperiod,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["1"]'))) AS temp1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
+          AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
+        FROM sensorstatuses
+        WHERE feeder_id = '${feederId}' 
+        AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
+        GROUP BY MONTH(createdAt)
+        ORDER BY MONTH(createdAt);`;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      if (records.length > 0) {
+        records.forEach((val) => {
+          myLabels.push(val.timeperiod);
+          temp1Values.push(val.temp1);
+          temp2Values.push(val.temp2);
+          hum1Values.push(val.hum1);
+          hum2Values.push(val.hum2);
+        });
+
+        res.status(200).send({
+          data: {
+            temp1: temp1Values,
+            temp2: temp2Values,
+            hum1: hum1Values,
+            hum2: hum2Values,
+          },
+          labels: myLabels,
+        });
+      } else {
+        res.status(200).send({
+          data: {
+            temp1: [],
+            temp2: [],
+            hum1: [],
+            hum2: [],
+          },
+          labels: [],
+        });
+      }
+    } else {
+      res.status(400).send({ message: "Invalid filter selected" });
+    }
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
 module.exports = {
   getSensorData,
   getServerData,
   getVoltCurrentData,
   getAlarmNotificationsData,
   getAllNotificationsList,
+  getSensorDataForChart,
 };
