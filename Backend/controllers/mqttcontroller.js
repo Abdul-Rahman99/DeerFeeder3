@@ -222,16 +222,15 @@ client.on("message", async function (topic, message) {
         }
 
         try {
-          let payload= {
+          let payload = {
             Wieghts: value,
-            FeederId: feeder_id 
-          }  
+            FeederId: feeder_id,
+          };
           await models.WtSensors.create(payload);
           console.log("weights updated successfully.");
         } catch (error) {
           console.error("Error updating weights: ", error.message);
         }
-
       } else {
         console.log("Could not find the values");
       }
@@ -1166,7 +1165,7 @@ const getSensorDataForChart = async (req, res) => {
 
             const nextQuery = `
               SELECT client_message
-              FROM sensorstatuses
+              FROM SensorStatuses
               WHERE feeder_id = '${feederId}' 
               AND createdAt >= '${nextMoment}' AND createdAt < '${moment(
               nextMoment
@@ -1212,7 +1211,7 @@ const getSensorDataForChart = async (req, res) => {
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
-        FROM sensorstatuses
+        FROM SensorStatuses
         WHERE feeder_id = '${feederId}' 
         AND DATE(createdAt) BETWEEN '${sdatefrom
           .clone()
@@ -1263,7 +1262,7 @@ const getSensorDataForChart = async (req, res) => {
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
-        FROM sensorstatuses
+        FROM SensorStatuses
         WHERE feeder_id = '${feederId}' 
         AND MONTH(createdAt) = ${sdatefrom.format("M")}
         AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
@@ -1311,7 +1310,7 @@ const getSensorDataForChart = async (req, res) => {
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["3"]'))) AS temp2,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["2"]'))) AS hum1,
           AVG(JSON_UNQUOTE(JSON_EXTRACT(client_message, '$.["4"]'))) AS hum2
-        FROM sensorstatuses
+        FROM SensorStatuses
         WHERE feeder_id = '${feederId}' 
         AND YEAR(createdAt) = ${sdatefrom.format("YYYY")}
         GROUP BY MONTH(createdAt)
