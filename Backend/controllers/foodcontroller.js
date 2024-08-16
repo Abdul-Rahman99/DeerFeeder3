@@ -470,7 +470,7 @@ const getHourlyFeedConsumptionData = async (req, res) => {
       const query = `
         (
           SELECT Wieghts, createdAt
-          FROM wtsensors
+          FROM WtSensors
           WHERE FeederId = '${feederId}'
             AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
             AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
@@ -480,7 +480,7 @@ const getHourlyFeedConsumptionData = async (req, res) => {
         UNION ALL
         (
           SELECT Wieghts, createdAt
-          FROM wtsensors
+          FROM WtSensors
           WHERE FeederId = '${feederId}'
             AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
             AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
@@ -549,7 +549,7 @@ const getDailyFeedConsumptionData = async (req, res) => {
     const query = `
       SELECT DATE(createdAt) as date, GROUP_CONCAT(Wieghts ORDER BY createdAt SEPARATOR ',') as Wieghts, 
             MIN(createdAt) as firstEntry, MAX(createdAt) as lastEntry
-      FROM wtsensors
+      FROM WtSensors
       WHERE FeederId = '${feederId}'
         AND DATE(createdAt) BETWEEN '${startDate.format("YYYY-MM-DD")}'
         AND '${endDate.format("YYYY-MM-DD")}'
