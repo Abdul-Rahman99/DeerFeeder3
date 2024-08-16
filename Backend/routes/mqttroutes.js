@@ -76,6 +76,8 @@ const {
   UpdateScheduleStopStatus,
   getFeederStopStatus,
   ExecuteFeedNow,
+  getHourlyFeedConsumptionData,
+  getDailyFeedConsumptionData,
 } = require("../controllers/foodcontroller.js");
 const {
   getDevices,
@@ -258,6 +260,16 @@ router.put("/api/updateHasCapacity/:feederId", updateHasCapacity);
 router.get(
   "/api/getSensorDataForChart/:feederId/:datefrom?/:sfilter?",
   getSensorDataForChart
+);
+
+router.get(
+  "/api/feed-consumption/hourly/:feederId/:datefrom/:dateto",
+  getHourlyFeedConsumptionData
+);
+
+router.get(
+  "/api/feed-consumption/daily/:feederId/:datefrom/:dateto",
+  getDailyFeedConsumptionData
 );
 
 module.exports = router;

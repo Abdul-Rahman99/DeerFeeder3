@@ -111,9 +111,9 @@ export const HumidityTemperatureCharts = () => {
                         }
                       >
                         <option value={"Daily"}>Daily</option>
-                        <option value={"Weekly"}>Weekly</option>
+                        {/* <option value={"Weekly"}>Weekly</option>
                         <option value={"Monthly"}>Monthly</option>
-                        <option value={"Yearly"}>Yearly</option>
+                        <option value={"Yearly"}>Yearly</option> */}
                       </select>
                     </div>
                   </Col>
@@ -194,9 +194,9 @@ export const HumidityTemperatureCharts = () => {
                         }
                       >
                         <option value={"Daily"}>Daily</option>
-                        <option value={"Weekly"}>Weekly</option>
+                        {/* <option value={"Weekly"}>Weekly</option>
                         <option value={"Monthly"}>Monthly</option>
-                        <option value={"Yearly"}>Yearly</option>
+                        <option value={"Yearly"}>Yearly</option> */}
                       </select>
                     </div>
                   </Col>

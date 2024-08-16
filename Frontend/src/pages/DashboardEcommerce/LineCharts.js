@@ -3,6 +3,123 @@ import ReactApexChart from "react-apexcharts";
 
 import getChartColorsArray from "../../Components/Common/ChartsDynamicColor";
 
+// src/components/BarChartWithLabels.js
+
+const CustomLineChart = ({
+  dataColors,
+  myChartData,
+  myLabels,
+  filterType,
+  showDataLabels,
+}) => {
+  const lineChartColors = JSON.parse(dataColors);
+  const series = [
+    {
+      name: "Feed Consumption (Kgs)",
+      data: myChartData,
+    },
+  ];
+
+  const options = {
+    chart: {
+      height: 380,
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+      toolbar: {
+        show: true,
+      },
+    },
+    colors: lineChartColors,
+    dataLabels: {
+      enabled: showDataLabels,
+      formatter: function (val) {
+        return val + " Kgs";
+      },
+      background: {
+        enabled: true,
+        foreColor: "#fff",
+        borderRadius: 2,
+        padding: 4,
+        opacity: 0.9,
+        borderWidth: 1,
+        borderColor: "#fff",
+      },
+      style: {
+        fontSize: "10px",
+        fontFamily: "Helvetica, Arial, sans-serif",
+      },
+    },
+    stroke: {
+      width: [2],
+      curve: "smooth",
+    },
+    title: {
+      text: "Feed Consumption",
+      align: "left",
+      style: {
+        fontWeight: 500,
+      },
+    },
+    grid: {
+      row: {
+        colors: ["transparent", "transparent"],
+        opacity: 0.2,
+      },
+      borderColor: "#7d7d7d",
+    },
+    markers: {
+      style: "inverted",
+      size: 5,
+    },
+    xaxis: {
+      categories: myLabels,
+      title: {
+        text: filterType || "Time Period",
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Feed Consumed (KG)",
+      },
+      min: 0,
+      max: Math.max(...myChartData, 0) + 20,
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "right",
+      floating: true,
+      offsetY: -25,
+      offsetX: -5,
+    },
+    responsive: [
+      {
+        breakpoint: 600,
+        options: {
+          chart: {
+            toolbar: {
+              show: true,
+            },
+          },
+          legend: {
+            show: true,
+          },
+        },
+      },
+    ],
+  };
+
+  return (
+    <ReactApexChart
+      options={options}
+      series={series}
+      type="line"
+      height="380"
+      className="apex-charts"
+    />
+  );
+};
 const BasicLineCharts = ({ dataColors }) => {
   var linechartBasicColors = getChartColorsArray(dataColors);
   const series = [
@@ -1745,4 +1862,5 @@ export {
   ChartSyncingLine2,
   ChartSyncingArea,
   DoubleLineChart,
+  CustomLineChart,
 };
