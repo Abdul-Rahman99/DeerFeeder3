@@ -1155,7 +1155,7 @@ const getSensorDataForChart = async (req, res) => {
           temp2 = parseFloat(data["3"]);
           hum2 = parseFloat(data["4"]);
         } else {
-          // atttempt to get the next available value if current hour value is null
+          // attempt to get the next available value if current hour value is null
           for (let j = 1; j <= 5; j++) {
             let nextMoment = sdatefrom
               .clone()
@@ -1189,10 +1189,11 @@ const getSensorDataForChart = async (req, res) => {
             }
           }
         }
-        temp1Values.push(temp1);
-        temp2Values.push(temp2);
-        hum1Values.push(hum1);
-        hum2Values.push(hum2);
+        // Only push non-zero values to the arrays
+        if (temp1 !== 0) temp1Values.push(temp1);
+        if (temp2 !== 0) temp2Values.push(temp2);
+        if (hum1 !== 0) hum1Values.push(hum1);
+        if (hum2 !== 0) hum2Values.push(hum2);
       }
       res.status(200).send({
         data: {
@@ -1201,7 +1202,7 @@ const getSensorDataForChart = async (req, res) => {
           hum1: hum1Values,
           hum2: hum2Values,
         },
-        labels: myLabels,
+        labels: myLabels.filter((_, i) => temp1Values[i] !== undefined), // filter label based on non-zero data
       });
     } else if (sfilter === "Weekly") {
       const query = `
@@ -1227,11 +1228,13 @@ const getSensorDataForChart = async (req, res) => {
 
       if (records.length > 0) {
         records.forEach((val) => {
-          myLabels.push(val.timeperiod);
-          temp1Values.push(val.temp1);
-          temp2Values.push(val.temp2);
-          hum1Values.push(val.hum1);
-          hum2Values.push(val.hum2);
+          if (val.temp1 != 0) {
+            myLabels.push(val.timeperiod);
+            temp1Values.push(val.temp1);
+            temp2Values.push(val.temp2);
+            hum1Values.push(val.hum1);
+            hum2Values.push(val.hum2);
+          }
         });
 
         res.status(200).send({
@@ -1275,11 +1278,13 @@ const getSensorDataForChart = async (req, res) => {
 
       if (records.length > 0) {
         records.forEach((val) => {
-          myLabels.push(val.timeperiod);
-          temp1Values.push(val.temp1);
-          temp2Values.push(val.temp2);
-          hum1Values.push(val.hum1);
-          hum2Values.push(val.hum2);
+          if (val.temp1 != 0) {
+            myLabels.push(val.timeperiod);
+            temp1Values.push(val.temp1);
+            temp2Values.push(val.temp2);
+            hum1Values.push(val.hum1);
+            hum2Values.push(val.hum2);
+          }
         });
 
         res.status(200).send({
@@ -1322,11 +1327,13 @@ const getSensorDataForChart = async (req, res) => {
 
       if (records.length > 0) {
         records.forEach((val) => {
-          myLabels.push(val.timeperiod);
-          temp1Values.push(val.temp1);
-          temp2Values.push(val.temp2);
-          hum1Values.push(val.hum1);
-          hum2Values.push(val.hum2);
+          if (val.temp1 != 0) {
+            myLabels.push(val.timeperiod);
+            temp1Values.push(val.temp1);
+            temp2Values.push(val.temp2);
+            hum1Values.push(val.hum1);
+            hum2Values.push(val.hum2);
+          }
         });
 
         res.status(200).send({
