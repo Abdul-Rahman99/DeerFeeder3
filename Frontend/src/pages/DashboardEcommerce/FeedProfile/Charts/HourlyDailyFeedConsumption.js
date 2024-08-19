@@ -54,11 +54,11 @@ export const HourlyDailyFeedConsumption = () => {
       let response;
       if (filterType === "Hourly") {
         response = await axios.get(
-          `/api/feed-consumption/hourly/55/${datefrom}/${dateToSend}`
+          `/api/feed-consumption/hourly/${currentFeederId}/${datefrom}/${dateToSend}`
         );
       } else if (filterType === "Daily") {
         response = await axios.get(
-          `/api/feed-consumption/daily/55/${datefrom}/${dateToSend}`
+          `/api/feed-consumption/daily/${currentFeederId}/${datefrom}/${dateToSend}`
         );
       }
 
