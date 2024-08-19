@@ -911,7 +911,130 @@ const LinewithDataLabelsSecond = ({
     </React.Fragment>
   );
 };
-
+const LinewithDataLabelsSecond2 = ({
+  dataColors,
+  myChartData,
+  FilterType,
+  showDataLabels,
+}) => {
+  var LinewithDataLabelsColors = getChartColorsArray(dataColors);
+  var series = [
+    {
+      name: "Deer Consumed (Kgs)",
+      // data: [26, 50, 20, 63, 33, 80, 15]
+      data: myChartData.data,
+    },
+  ];
+  var options = {
+    chart: {
+      height: 380,
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+      toolbar: {
+        show: true,
+      },
+    },
+    colors: LinewithDataLabelsColors,
+    dataLabels: {
+      enabled: showDataLabels,
+      formatter: function (val, opt) {
+        return val + " Kgs";
+      },
+      // background: {
+      //     enabled: false,
+      // },
+      background: {
+        enabled: true,
+        foreColor: "#fff",
+        borderRadius: 2,
+        padding: 4,
+        opacity: 0.9,
+        borderWidth: 1,
+        borderColor: "#fff",
+      },
+      textAnchor: "end",
+      distributed: true,
+      offsetX: 8,
+      offsetY: -8,
+      style: {
+        fontSize: "10px",
+        fontFamily: "Helvetica, Arial, sans-serif",
+      },
+    },
+    stroke: {
+      width: [2, 2],
+      curve: "straight",
+    },
+    title: {
+      text: "Deers Feed Consumption",
+      align: "left",
+      style: {
+        fontWeight: 500,
+      },
+    },
+    grid: {
+      row: {
+        colors: ["transparent", "transparent"], // takes an array which will be repeated on columns
+        opacity: 0.2,
+      },
+      borderColor: "#7d7d7d",
+    },
+    markers: {
+      style: "inverted",
+      size: 5,
+    },
+    xaxis: {
+      // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      categories: myChartData.labels,
+      title: {
+        text: (FilterType == "Daily" ? "Days" : FilterType) || "Days",
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Feed Consumed (KGS)",
+      },
+      min: 0,
+      max: getMax(myChartData.data) + 20,
+    },
+    legend: {
+      position: "top",
+      horizontalAlign: "right",
+      floating: true,
+      offsetY: -25,
+      offsetX: -5,
+    },
+    responsive: [
+      {
+        breakpoint: 600,
+        options: {
+          chart: {
+            toolbar: {
+              show: true,
+            },
+          },
+          legend: {
+            show: true,
+          },
+        },
+      },
+    ],
+  };
+  return (
+    <React.Fragment>
+      <ReactApexChart
+        dir="ltr"
+        options={options}
+        series={series}
+        type="line"
+        height="380"
+        className="apex-charts"
+      />
+    </React.Fragment>
+  );
+};
 const LinewithDataLabels = ({ dataColors, type, voltCurrentData }) => {
   var LinewithDataLabelsColors = getChartColorsArray(dataColors);
   var series = [
@@ -1863,4 +1986,5 @@ export {
   ChartSyncingArea,
   DoubleLineChart,
   CustomLineChart,
+  LinewithDataLabelsSecond2,
 };

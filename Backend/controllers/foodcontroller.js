@@ -468,25 +468,22 @@ const getHourlyFeedConsumptionData = async (req, res) => {
       const endHour = startHour.clone().add(1, "hours");
 
       const query = `
-        (
-          SELECT Wieghts, createdAt
-          FROM WtSensors
-          WHERE FeederId = '${feederId}'
-            AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
-            AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
-          ORDER BY createdAt ASC
-          LIMIT 1
-        )
-        UNION ALL
-        (
-          SELECT Wieghts, createdAt
-          FROM WtSensors
-          WHERE FeederId = '${feederId}'
-            AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
-            AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
-          ORDER BY createdAt DESC
-          LIMIT 1
-        )
+      SELECT Wieghts, createdAt AS 'timeperiod'
+      FROM (
+        SELECT 
+          Wieghts, 
+          createdAt, 
+          ROW_NUMBER() OVER (PARTITION BY 
+            DATE_FORMAT(createdAt, '%Y-%m-%d %H'), 
+            FLOOR(MINUTE(createdAt) / 10) 
+          ORDER BY ABS(MINUTE(createdAt) - 10 * FLOOR(MINUTE(createdAt) / 10))) AS rn
+        FROM wtsensors
+        WHERE FeederId = '${feederId}'
+          AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
+          AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
+      ) AS subquery
+      WHERE rn = 1
+      ORDER BY createdAt;
       `;
 
       queries.push(models.sequelize.query(query, { type: QueryTypes.SELECT }));
@@ -496,21 +493,25 @@ const getHourlyFeedConsumptionData = async (req, res) => {
     const results = await Promise.all(queries);
 
     results.forEach((records) => {
-      if (records.length === 2) {
-        const startWeights = records[0].Wieghts.split(",").slice(0, 8);
-        const endWeights = records[1].Wieghts.split(",").slice(0, 8);
-
-        const startTotalWeight = startWeights.reduce(
-          (acc, weight) => acc + parseFloat(weight),
+      if (records.length === 6) {
+        let hourWeights = records.map((record) => {
+          return record.Wieghts.split(",").map((weight) => parseFloat(weight));
+        });
+        // console.log("hourWeights:", hourWeights);
+        const totalConsumption = hourWeights[0].reduce(
+          (acc, weight, i) => acc + (weight - hourWeights[5][i]),
           0
         );
-        const endTotalWeight = endWeights.reduce(
-          (acc, weight) => acc + parseFloat(weight),
-          0
-        );
+        // console.log("totalConsumption:", totalConsumption);
+        const averageConsumption = totalConsumption;
 
-        const consumed = startTotalWeight - endTotalWeight;
-        values.push(consumed >= 0 ? consumed.toFixed(1) : 0);
+        // jsut a failire condition if the feed is getting filled by someone or someone puts his hands in the trays so the value increased
+        // NO DEERS WILL CONSUME MORE THAN 5kg PER HOUR <they are consuming from 10 to 20 kgs per day>
+        if (Math.abs(averageConsumption.toFixed(1)) > 5) {
+          values.push(0);
+        } else {
+          values.push(Math.abs(averageConsumption.toFixed(1)));
+        }
       } else {
         values.push(0);
       }
@@ -522,15 +523,16 @@ const getHourlyFeedConsumptionData = async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 };
+
 const getDailyFeedConsumptionData = async (req, res) => {
   try {
     const feederId = req.params.feederId;
     const startDate = req.params.datefrom
       ? moment(req.params.datefrom, "YYYY-MM-DD")
-      : moment().subtract(7, "days").startOf("day");
+      : moment().startOf("day").subtract(7, "days");
     const endDate = req.params.dateto
       ? moment(req.params.dateto, "YYYY-MM-DD")
-      : moment().endOf("day");
+      : moment().startOf("day");
 
     if (!feederId) {
       return res.status(400).send({ error: "Feeder ID is required" });
@@ -546,41 +548,65 @@ const getDailyFeedConsumptionData = async (req, res) => {
         .send({ error: "Start date cannot be after end date" });
     }
 
-    const query = `
-      SELECT DATE(createdAt) as date, GROUP_CONCAT(Wieghts ORDER BY createdAt SEPARATOR ',') as Wieghts, 
-            MIN(createdAt) as firstEntry, MAX(createdAt) as lastEntry
-      FROM WtSensors
-      WHERE FeederId = '${feederId}'
-        AND DATE(createdAt) BETWEEN '${startDate.format("YYYY-MM-DD")}'
-        AND '${endDate.format("YYYY-MM-DD")}'
-      GROUP BY DATE(createdAt)
-      ORDER BY DATE(createdAt)
-    `;
+    let labels = [];
+    let values = [];
 
-    const records = await models.sequelize.query(query, {
-      type: QueryTypes.SELECT,
-    });
+    const daysCount = endDate.diff(startDate, "days") + 1;
 
-    const labels = [];
-    const values = [];
+    for (let i = 0; i < daysCount; i++) {
+      const dayStart = startDate.clone().add(i, "days").startOf("day");
+      const dayEnd = dayStart.clone().endOf("day");
 
-    records.forEach((record) => {
-      const date = record.date;
-      const weightsArray = record.Wieghts.split(",");
+      let dailyConsumption = 0;
 
-      const firstWeightSum = weightsArray
-        .slice(0, 8)
-        .reduce((sum, weight) => sum + parseFloat(weight), 0);
+      for (let hour = 0; hour < 24; hour++) {
+        const startHour = dayStart.clone().add(hour, "hours");
+        const endHour = startHour.clone().add(1, "hours");
 
-      const lastWeightSum = weightsArray
-        .slice(-8)
-        .reduce((sum, weight) => sum + parseFloat(weight), 0);
+        const query = `
+        SELECT Wieghts, createdAt AS 'timeperiod'
+        FROM (
+          SELECT 
+            Wieghts, 
+            createdAt, 
+            ROW_NUMBER() OVER (PARTITION BY 
+              DATE_FORMAT(createdAt, '%Y-%m-%d %H'), 
+              FLOOR(MINUTE(createdAt) / 10) 
+            ORDER BY ABS(MINUTE(createdAt) - 10 * FLOOR(MINUTE(createdAt) / 10))) AS rn
+          FROM wtsensors
+          WHERE FeederId = '${feederId}'
+            AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
+            AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
+        ) AS subquery
+        WHERE rn = 1
+        ORDER BY createdAt;
+        `;
 
-      const consumed = firstWeightSum - lastWeightSum;
+        const records = await models.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
 
-      labels.push(date);
-      values.push(Math.round(consumed) || 0);
-    });
+        if (records.length === 6) {
+          let hourWeights = records.map((record) => {
+            return record.Wieghts.split(",").map((weight) =>
+              parseFloat(weight)
+            );
+          });
+          const totalConsumption = hourWeights[0].reduce(
+            (acc, weight, i) => acc + (weight - hourWeights[5][i]),
+            0
+          );
+          const averageConsumption = totalConsumption;
+
+          if (Math.abs(Math.round(averageConsumption)) <= 5) {
+            dailyConsumption += Math.abs(Math.round(averageConsumption));
+          }
+        }
+      }
+
+      labels.push(dayStart.format("YYYY-MM-DD"));
+      values.push(dailyConsumption);
+    }
 
     res.status(200).send({ data: values, labels: labels });
   } catch (error) {

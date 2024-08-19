@@ -355,7 +355,7 @@ const getBirdsDataForGraph = async (req, res) => {
                 SELECT
                     CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
                     client_topic,
-                    MAX(json_extract(client_message, '$.countBirds')) as max_count
+                    MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
                 FROM
                     BirdsData
                 WHERE
@@ -401,9 +401,13 @@ const getBirdsDataForGraph = async (req, res) => {
         Object.entries(all_objs_dict).forEach(([key, count]) => {
           if (key === "BIRD") {
             key = "DEER";
+          } else if (key === "NOT_BIRD") {
+            key = "NOT_DEER";
+          } else if (key === "BIG_BIRD") {
+            key = "ORYX";
           }
-          const specieCount = birdspiedata.get(key) || 0;
-          birdspiedata.set(key, specieCount + count);
+          const specieCount = birdspiedata.get(key) || 1;
+          birdspiedata.set(key, specieCount ? specieCount + count : 1);
         });
       });
 

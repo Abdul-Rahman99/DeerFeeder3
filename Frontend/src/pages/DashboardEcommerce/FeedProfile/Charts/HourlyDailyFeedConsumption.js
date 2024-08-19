@@ -12,15 +12,12 @@ import React, { useState, useEffect } from "react";
 import Flatpickr from "react-flatpickr";
 import moment from "moment";
 import axios from "axios";
-import { LinewithDataLabelsSecond } from "../../LineCharts";
+import { LinewithDataLabelsSecond2 } from "../../LineCharts";
 import { useFeedProfileMainInfo } from "../hooks";
 
 export const HourlyDailyFeedConsumption = () => {
   const [filterType, setFilterType] = useState("Hourly"); // Default to Hourly
-  const [dateRange, setDateRange] = useState([
-    moment().subtract(1, "days"),
-    moment(),
-  ]);
+  const [dateRange, setDateRange] = useState([moment(), moment()]);
   const [showDataLabels, updateGraphLabels] = useState(true);
   const [myGraphLoader, setMyGraphLoader] = useState(false);
   const [feedConsumptionData, setFeedConsumptionData] = useState({
@@ -37,17 +34,8 @@ export const HourlyDailyFeedConsumption = () => {
       case "Daily":
         setDateRange([moment(), moment()]); // Current day
         break;
-      case "Weekly":
-        setDateRange([moment().subtract(3, "days"), moment()]); // Last 3 days
-        break;
-      case "Monthly":
-        setDateRange([
-          moment().subtract(1, "month").startOf("month"),
-          moment(),
-        ]); // Current month
-        break;
       default:
-        setDateRange([moment().subtract(1, "days"), moment()]); // Default to last day
+        setDateRange([moment(), moment()]); // Default to last day
         break;
     }
   };
@@ -66,11 +54,11 @@ export const HourlyDailyFeedConsumption = () => {
       let response;
       if (filterType === "Hourly") {
         response = await axios.get(
-          `/api/feed-consumption/hourly/${currentFeederId}/${datefrom}/${dateToSend}`
+          `/api/feed-consumption/hourly/55/${datefrom}/${dateToSend}`
         );
       } else if (filterType === "Daily") {
         response = await axios.get(
-          `/api/feed-consumption/daily/${currentFeederId}/${datefrom}/${dateToSend}`
+          `/api/feed-consumption/daily/55/${datefrom}/${dateToSend}`
         );
       }
 
@@ -121,9 +109,20 @@ export const HourlyDailyFeedConsumption = () => {
                             moment(date).format("YYYY-MM-DD")
                           ),
                         }}
-                        onChange={(selectedDates) =>
-                          updateDateRange(selectedDates)
-                        }
+                        onChange={(selectedDates) => {
+                          updateDateRange(selectedDates);
+                          if (
+                            selectedDates.length === 1 ||
+                            moment(selectedDates[0]).isSame(
+                              moment(selectedDates[1]),
+                              "day"
+                            )
+                          ) {
+                            setFilterType("Hourly");
+                          } else {
+                            setFilterType("Daily");
+                          }
+                        }}
                       />
                       <div className="input-group-text bg-dark border-dark text-white">
                         <i className="ri-calendar-2-line"></i>
@@ -142,7 +141,7 @@ export const HourlyDailyFeedConsumption = () => {
                         <option value="Hourly">Hourly</option>
                         <option value="Daily">Daily</option>
                         {/* <option value="Weekly">Weekly</option>
-                        <option value="Monthly">Monthly</option> */}
+                      <option value="Monthly">Monthly</option> */}
                       </select>
                     </div>
                   </Col>
@@ -164,7 +163,7 @@ export const HourlyDailyFeedConsumption = () => {
             </Row>
           </CardHeader>
           <CardBody>
-            <LinewithDataLabelsSecond
+            <LinewithDataLabelsSecond2
               dataColors='["#3b8132"]'
               myChartData={feedConsumptionData || []}
               filterType={filterType}
