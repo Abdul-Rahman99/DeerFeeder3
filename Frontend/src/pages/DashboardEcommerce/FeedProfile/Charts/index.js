@@ -10,7 +10,7 @@ import { HourlyDailyFeedConsumption } from "./HourlyDailyFeedConsumption";
 
 export const Charts = ({ currentFeederId }) => (
   <ChartsProvider currentFeederId={currentFeederId}>
-    <FeedConsumption />
+    {/* <FeedConsumption /> */}
     <AverageBirdsCount />
     <BirdsSpecies />
     <HumidityTemperatureCharts />
