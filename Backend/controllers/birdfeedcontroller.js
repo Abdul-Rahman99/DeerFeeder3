@@ -77,7 +77,7 @@ const addDevice = async (req, res) => {
         other_info,
         feed_level: 800,
         feed_level_percentage: 100,
-        tank_capacity: 800,
+        tank_capacity: tank_capacity || 800,
         motor_speed,
         Tray1: 0,
         Tray2: 0,

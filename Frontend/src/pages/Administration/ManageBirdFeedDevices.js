@@ -39,6 +39,7 @@ const ManageBirdFeedDevices = () => {
   const [latitude, setLat] = useState("");
   const [longitude, setLong] = useState("");
   const [isNew, setIsNew] = useState(true);
+  const [tank_capacity, setTankCapacity] = useState(0);
 
   useEffect(() => {
     updateData();
@@ -85,6 +86,8 @@ const ManageBirdFeedDevices = () => {
       newErrors.longitude = "Longitude must be a number";
     if (motor_speed && isNaN(parseFloat(motor_speed)))
       newErrors.motor_speed = "Motor Speed must be a float number";
+    if (tank_capacity && isNaN(parseInt(tank_capacity)))
+      newErrors.tank_capacity = "Tank Capacity must be an Integer number";
     // if (typeof has_capacity !== "boolean")
     //   newErrors.has_capacity = "Has Capacity must be a boolean value";
     // if (typeof has_tray !== "boolean")
@@ -119,6 +122,7 @@ const ManageBirdFeedDevices = () => {
         has_tray,
         has_mode3,
         mode3_status,
+        tank_capacity,
       })
       .then((res) => {
         if (res && res.status === true) {
@@ -212,6 +216,7 @@ const ManageBirdFeedDevices = () => {
       setHasTray(false);
       setHasMode3(false);
       setHasMode3Status(false);
+      setTankCapacity("");
     } else {
       setId(val.id);
       setTitle(val.title);
@@ -224,6 +229,7 @@ const ManageBirdFeedDevices = () => {
       setMotorSpeed(val.motor_speed);
       setHasTray(val.has_tray);
       setHasMode3(val.has_mode3);
+      setTankCapacity(val.tank_capacity);
       setHasMode3Status(val.mode3_status);
       let JsonC = JSON.parse(val.other_info);
       setLat(JsonC.latitude);
@@ -397,6 +403,21 @@ const ManageBirdFeedDevices = () => {
               )}
             </Col>
             <Col xl={6}>
+              <label>Tank Capacity:</label>
+              <input
+                type="text"
+                name="tank_capacity"
+                id="tank_capacity"
+                value={tank_capacity}
+                onChange={(e) => setTankCapacity(e.target.value)}
+                placeholder="Tank Capacity"
+                className="form-control"
+              />
+              {errors.tank_capacity && (
+                <div className="text-danger">{errors.tank_capacity}</div>
+              )}
+            </Col>
+            <Col xl={6}>
               <label>Camera MAC Address:</label>
               <input
                 type="text"
@@ -501,6 +522,7 @@ const ManageBirdFeedDevices = () => {
                           <th scope="col">Location</th>
                           <th scope="col">MAC Address</th>
                           <th scope="col">Camera MAC Address</th>
+                          <th scope="col">Tank Capacity</th>
                           <th scope="col">NOT Fixed Capacity</th>
                           <th scope="col">Has Tray</th>
                           <th scope="col">Feed Per Second</th>
@@ -521,6 +543,7 @@ const ManageBirdFeedDevices = () => {
                               <td>{val.location}</td>
                               <td>{val.mac_address}</td>
                               <td>{val.camera_mac_address}</td>
+                              <td>{val.tank_capacity}</td>
                               <td>{val.has_capacity ? "Yes" : "No"}</td>
                               <td>{val.has_tray ? "Yes" : "No"}</td>
                               <td>{val.motor_speed}</td>
