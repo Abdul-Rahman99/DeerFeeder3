@@ -477,7 +477,7 @@ const getHourlyFeedConsumptionData = async (req, res) => {
             DATE_FORMAT(createdAt, '%Y-%m-%d %H'), 
             FLOOR(MINUTE(createdAt) / 10) 
           ORDER BY ABS(MINUTE(createdAt) - 10 * FLOOR(MINUTE(createdAt) / 10))) AS rn
-        FROM wtsensors
+        FROM WtSensors
         WHERE FeederId = '${feederId}'
           AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
           AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
@@ -573,7 +573,7 @@ const getDailyFeedConsumptionData = async (req, res) => {
               DATE_FORMAT(createdAt, '%Y-%m-%d %H'), 
               FLOOR(MINUTE(createdAt) / 10) 
             ORDER BY ABS(MINUTE(createdAt) - 10 * FLOOR(MINUTE(createdAt) / 10))) AS rn
-          FROM wtsensors
+          FROM WtSensors
           WHERE FeederId = '${feederId}'
             AND createdAt BETWEEN '${startHour.format("YYYY-MM-DD HH:mm:ss")}'
             AND '${endHour.format("YYYY-MM-DD HH:mm:ss")}'
