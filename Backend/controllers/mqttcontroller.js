@@ -487,7 +487,7 @@ client.on("message", async function (topic, message) {
           }
         } else {
           let myNewAr = JSON.parse(newAr);
-          if (myNewAr.countBirds > 0) {
+          if (myNewAr.deer_oryx_count > 0 || myNewAr.countObjs > 0) {
             let post = {
               client_message: JSON.stringify(myNewAr),
               client_topic: getLastElem,
