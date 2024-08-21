@@ -35,7 +35,6 @@ export const HourlyDailyFeedConsumption = () => {
         setDateRange([moment(), moment()]); // Current day
         break;
       default:
-        setDateRange([moment(), moment()]); // Default to last day
         break;
     }
   };
@@ -73,9 +72,9 @@ export const HourlyDailyFeedConsumption = () => {
     }
   };
 
-  useEffect(() => {
-    updateDateRangeBasedOnFilter(filterType);
-  }, [filterType]);
+  // useEffect(() => {
+  //   updateDateRangeBasedOnFilter(filterType);
+  // }, [filterType]);
 
   useEffect(() => {
     fetchFeedConsumptionData();
