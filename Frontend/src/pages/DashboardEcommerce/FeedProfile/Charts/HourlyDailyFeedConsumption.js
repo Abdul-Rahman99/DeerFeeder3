@@ -26,19 +26,6 @@ export const HourlyDailyFeedConsumption = () => {
   });
   const { currentFeederId } = useFeedProfileMainInfo();
 
-  const updateDateRangeBasedOnFilter = (filter) => {
-    switch (filter) {
-      case "Hourly":
-        setDateRange([moment(), moment()]); // Last 24 hours
-        break;
-      case "Daily":
-        setDateRange([moment(), moment()]); // Current day
-        break;
-      default:
-        break;
-    }
-  };
-
   const fetchFeedConsumptionData = async () => {
     setMyGraphLoader(true);
     try {
