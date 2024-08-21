@@ -29,7 +29,7 @@ export const HourlyDailyFeedConsumption = () => {
   const updateDateRangeBasedOnFilter = (filter) => {
     switch (filter) {
       case "Hourly":
-        setDateRange([moment().subtract(1, "days"), moment()]); // Last 24 hours
+        setDateRange([moment(), moment()]); // Last 24 hours
         break;
       case "Daily":
         setDateRange([moment(), moment()]); // Current day
