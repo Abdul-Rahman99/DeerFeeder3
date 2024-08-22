@@ -338,63 +338,74 @@ const getBirdsDataForGraph = async (req, res) => {
       timeRangeGroupByField = `CONCAT(HOUR(createdAt), ":", MINUTE(createdAt))`;
       sdateto = datefrom;
   }
-  // return res.status(200).json({ "555444444444444444444":54 });
+
   try {
     const query = `
-    SELECT
+      SELECT
         ${timeRangeGroupByField} as time,
         CONCAT(
-            '[',
-            GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
-            ']'
+          '[',
+          GROUP_CONCAT(UPPER(json_extract(client_message, '$.all_objs_dict'))),
+          ']'
         ) as speciesInfo,
         (
+          SELECT
+            SUM(max_count) as totalMaxCount
+          FROM (
             SELECT
-                SUM(max_count) as totalMaxCount
-            FROM (
-                SELECT
-                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
-                    client_topic,
-                    MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
-                FROM
-                    BirdsData
-                WHERE
-                    feeder_id = ${feederId} AND
-                    client_topic IN ('Processed2json', 'Processed1json') AND
-                    createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
-                GROUP BY
-                    CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
-            ) as subquery
-            WHERE subquery.time = ${timeRangeGroupByField}
+              CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)) as time,
+              client_topic,
+              MAX(json_extract(client_message, '$.deer_oryx_count')) as max_count
+            FROM
+              BirdsData
+            WHERE
+              feeder_id = ${feederId} AND
+              client_topic IN ('Processed2json', 'Processed1json') AND
+              createdAt >= '${datefrom} 00:00:00' AND createdAt <= '${sdateto} 23:59:59'
             GROUP BY
-                subquery.time
-            ORDER BY
-                subquery.time ASC
+              CONCAT(HOUR(createdAt), ":", MINUTE(createdAt)), client_topic
+          ) as subquery
+          WHERE subquery.time = ${timeRangeGroupByField}
+          GROUP BY
+            subquery.time
+          ORDER BY
+            subquery.time ASC
         ) as totalMaxCount
-
-    FROM
+      FROM
         BirdsData
-
-    WHERE
+      WHERE
         feeder_id = ${feederId} AND
         client_topic in ('Processed1json', 'Processed2json') AND
         DATE(createdAt) BETWEEN '${datefrom}' AND '${sdateto}'
-
-    GROUP BY
+      GROUP BY
         time
-
-    ORDER BY
+      ORDER BY
         createdAt ASC
-`;
+    `;
 
     const birdsData = await models.sequelize.query(query, {
       type: QueryTypes.SELECT,
     });
 
-    // return res.status(200).json({ birdsDataCam1 });
-
     const birdspiedata = new Map();
     const data = new Map();
+    let totalCount = 0;
+
+    birdsData?.forEach(({ speciesInfo }) => {
+      JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
+        Object.entries(all_objs_dict).forEach(([key, count]) => {
+          if (key === "BIRD") {
+            key = "DEER";
+          } else if (key === "NOT_BIRD") {
+            key = "NOT_DEER";
+          } else if (key === "BIG_BIRD") {
+            key = "ORYX";
+          }
+          totalCount += count;
+        });
+      });
+    });
+
     birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
       // Append data for pie graph
       JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
@@ -406,8 +417,12 @@ const getBirdsDataForGraph = async (req, res) => {
           } else if (key === "BIG_BIRD") {
             key = "ORYX";
           }
-          const specieCount = birdspiedata.get(key) || 1;
-          birdspiedata.set(key, specieCount ? specieCount + count : 1);
+          const specieCount = birdspiedata.get(key) || 0;
+          let tc = specieCount + (count / totalCount) * 100.0;
+          tc = (tc * 100) / 100;
+          tc = String(tc).slice(0, 7);
+          tc = Number(tc);
+          birdspiedata.set(key, tc);
         });
       });
 
@@ -432,7 +447,7 @@ const getBirdsDataForGraph = async (req, res) => {
       res.status(200).json(response);
     }
   } catch (error) {
-    res.status(500).json({ success: false });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
