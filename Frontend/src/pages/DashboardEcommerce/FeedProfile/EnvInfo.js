@@ -15,10 +15,14 @@ import {
 
 export const EnvInfo = ({ deviceDetail, weatherInfo, feederData }) => {
   const btyVoltPer = (((feederData?.btyVolt - 11) / 3.8) * 100)?.toFixed(0);
+  const solarCur = feederData?.solarCur;
 
-  const KelvinToCelsius = (temp) => {
-    return Math.floor(temp - 273.15);
-  };
+  // const btyVoltPer = 10
+  // console.log("btyVoltPer", btyVoltPer);
+
+  // const KelvinToCelsius = (temp) => {
+  //   return Math.floor(temp - 273.15);
+  // };
 
   return (
     <Row className="mb-3 pb-1" id="topprofile">
@@ -62,7 +66,11 @@ export const EnvInfo = ({ deviceDetail, weatherInfo, feederData }) => {
                 <div className="col-auto">
                   <p className="btn mybtn mybtn-1">
                     {btyVoltPer > 100 ? (
-                      <span>Charging</span>
+                      <img
+                        src={fullBattery}
+                        alt="fullBattery"
+                        style={{ width: "20px", height: "20px" }}
+                      />
                     ) : btyVoltPer > 80 && btyVoltPer <= 100 ? (
                       <img
                         src={fullBattery}
@@ -100,13 +108,13 @@ export const EnvInfo = ({ deviceDetail, weatherInfo, feederData }) => {
                 </div>
                 <div className="col-auto">
                   <p className="btn mybtn mybtn-1">
-                    {btyVoltPer > 100 ? (
+                    {solarCur > 8000 ? (
                       <img
                         src={solarDonepic}
                         alt="solarDonepic"
                         style={{ width: "20px", height: "20px" }}
                       />
-                    ) : btyVoltPer > 30 && btyVoltPer <= 100 ? (
+                    ) : solarCur <= 8000 ? (
                       <img
                         src={solarChargingpic}
                         alt="solarChargingpic"

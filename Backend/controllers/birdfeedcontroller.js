@@ -389,23 +389,6 @@ const getBirdsDataForGraph = async (req, res) => {
 
     const birdspiedata = new Map();
     const data = new Map();
-    let totalCount = 0;
-
-    birdsData?.forEach(({ speciesInfo }) => {
-      JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
-        Object.entries(all_objs_dict).forEach(([key, count]) => {
-          if (key === "BIRD") {
-            key = "DEER";
-          } else if (key === "NOT_BIRD") {
-            key = "NOT_DEER";
-          } else if (key === "BIG_BIRD") {
-            key = "ORYX";
-          }
-          totalCount += count;
-        });
-      });
-    });
-
     birdsData?.forEach(({ time, speciesInfo, totalMaxCount }) => {
       // Append data for pie graph
       JSON.parse(speciesInfo)?.forEach((all_objs_dict) => {
@@ -418,11 +401,7 @@ const getBirdsDataForGraph = async (req, res) => {
             key = "ORYX";
           }
           const specieCount = birdspiedata.get(key) || 0;
-          let tc = specieCount + (count / totalCount) * 100.0;
-          tc = (tc * 100) / 100;
-          tc = String(tc).slice(0, 7);
-          tc = Number(tc);
-          birdspiedata.set(key, tc);
+          birdspiedata.set(key, specieCount + count);
         });
       });
 
