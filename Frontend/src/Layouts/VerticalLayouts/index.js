@@ -43,7 +43,7 @@ const VerticalLayout = (props) => {
   
       useEffect(() => {
         document.documentElement.setAttribute("data-sidebar-size", "sm");
-      }, []);
+      }, [selectLayoutState]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
