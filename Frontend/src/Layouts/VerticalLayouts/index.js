@@ -37,47 +37,35 @@ const VerticalLayout = (props) => {
         sidebarVisibilitytype
     } = useSelector(selectLayoutProperties);
     //vertical and semibox resize events
-    // const resizeSidebarMenu = useCallback(() => {
-    //     var windowSize = document.documentElement.clientWidth;
-    //     if (windowSize >= 1025) {
-    //         if (document.documentElement.getAttribute("data-layout") === "vertical") {
-    //             document.documentElement.setAttribute("data-sidebar-size", leftsidbarSizeType);
-    //         }
-    //         if (document.documentElement.getAttribute("data-layout") === "semibox") {
-    //             document.documentElement.setAttribute("data-sidebar-size", leftsidbarSizeType);
-    //         }
-    //         if ((sidebarVisibilitytype === "show" || layoutType === "vertical" || layoutType === "twocolumn") && document.querySelector(".hamburger-icon")) {
-    //             document.querySelector(".hamburger-icon").classList.remove("open");
-    //         } else {
-    //             document.querySelector(".hamburger-icon").classList.add("open");
-    //         }
-
-    //     } else if (windowSize < 1025 && windowSize > 767) {
-    //         document.body.classList.remove("twocolumn-panel");
-    //         if (document.documentElement.getAttribute("data-layout") === "vertical") {
-    //             document.documentElement.setAttribute("data-sidebar-size", "sm");
-    //         }
-    //         if (document.documentElement.getAttribute("data-layout") === "semibox") {
-    //             document.documentElement.setAttribute("data-sidebar-size", "sm");
-    //         }
-    //         if (document.querySelector(".hamburger-icon")) {
-    //             document.querySelector(".hamburger-icon").classList.add("open");
-    //         }
-    //     } else if (windowSize <= 767) {
-    //         document.body.classList.remove("vertical-sidebar-enable");
-    //         if (document.documentElement.getAttribute("data-layout") !== "horizontal") {
-    //             document.documentElement.setAttribute("data-sidebar-size", "lg");
-    //         }
-    //         if (document.querySelector(".hamburger-icon")) {
-    //             document.querySelector(".hamburger-icon").classList.add("open");
-    //         }
-    //     }
-    // }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
-
-    // useEffect(() => {
-    //     window.addEventListener("resize", resizeSidebarMenu, true);
-    // }, [resizeSidebarMenu]);
-
+    const resizeSidebarMenu = useCallback(() => {
+      //     var windowSize = document.documentElement.clientWidth;
+      //     if (windowSize >= 1025) {
+  
+      //     } else if (windowSize < 1025 && windowSize > 767) {
+      //         document.body.classList.remove("twocolumn-panel");
+      //         if (document.documentElement.getAttribute("data-layout") === "vertical") {
+                  document.documentElement.setAttribute("data-sidebar-size", "sm");
+      //         }
+      //         if (document.documentElement.getAttribute("data-layout") === "semibox") {
+      //             document.documentElement.setAttribute("data-sidebar-size", "sm");
+      //         }
+      //         if (document.querySelector(".hamburger-icon")) {
+      //             document.querySelector(".hamburger-icon").classList.add("open");
+      //         }
+      //     } else if (windowSize <= 767) {
+      //         document.body.classList.remove("vertical-sidebar-enable");
+      //         if (document.documentElement.getAttribute("data-layout") !== "horizontal") {
+      //             document.documentElement.setAttribute("data-sidebar-size", "lg");
+      //         }
+      //         if (document.querySelector(".hamburger-icon")) {
+      //             document.querySelector(".hamburger-icon").classList.add("open");
+      //         }
+          // }
+      }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
+  
+      useEffect(() => {
+          window.addEventListener("resize", resizeSidebarMenu, true);
+      }, [resizeSidebarMenu]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
