@@ -64,7 +64,7 @@ const VerticalLayout = (props) => {
       }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
   
       useEffect(() => {
-          window.addEventListener("resize", resizeSidebarMenu, true);
+        resizeSidebarMenu()
       }, [resizeSidebarMenu]);
 
   useEffect(() => {
