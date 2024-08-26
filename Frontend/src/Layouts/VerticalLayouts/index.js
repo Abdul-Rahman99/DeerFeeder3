@@ -37,35 +37,13 @@ const VerticalLayout = (props) => {
         sidebarVisibilitytype
     } = useSelector(selectLayoutProperties);
     //vertical and semibox resize events
-    const resizeSidebarMenu = useCallback(() => {
-      //     var windowSize = document.documentElement.clientWidth;
-      //     if (windowSize >= 1025) {
-  
-      //     } else if (windowSize < 1025 && windowSize > 767) {
-      //         document.body.classList.remove("twocolumn-panel");
-      //         if (document.documentElement.getAttribute("data-layout") === "vertical") {
-                  document.documentElement.setAttribute("data-sidebar-size", "sm");
-      //         }
-      //         if (document.documentElement.getAttribute("data-layout") === "semibox") {
-      //             document.documentElement.setAttribute("data-sidebar-size", "sm");
-      //         }
-      //         if (document.querySelector(".hamburger-icon")) {
-      //             document.querySelector(".hamburger-icon").classList.add("open");
-      //         }
-      //     } else if (windowSize <= 767) {
-      //         document.body.classList.remove("vertical-sidebar-enable");
-      //         if (document.documentElement.getAttribute("data-layout") !== "horizontal") {
-      //             document.documentElement.setAttribute("data-sidebar-size", "lg");
-      //         }
-      //         if (document.querySelector(".hamburger-icon")) {
-      //             document.querySelector(".hamburger-icon").classList.add("open");
-      //         }
-          // }
-      }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
+    // const resizeSidebarMenu = useCallback(() => {
+    //       document.documentElement.setAttribute("data-sidebar-size", "sm");
+    //   }, [leftsidbarSizeType, sidebarVisibilitytype, layoutType]);
   
       useEffect(() => {
-        resizeSidebarMenu()
-      }, [resizeSidebarMenu]);
+        document.documentElement.setAttribute("data-sidebar-size", "sm");
+      }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
