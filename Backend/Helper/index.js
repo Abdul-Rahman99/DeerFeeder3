@@ -532,37 +532,37 @@ const getFeedLevelWtData = async () => {
         low_c: LowFeedLevels.length,
       };
 
-      AllFeedLevels.push(myNewAr);
-      let allTrays =
-        myNewAr.Tray1 + myNewAr.Tray2 + myNewAr.Tray3 + myNewAr.Tray4;
+      // AllFeedLevels.push(myNewAr);
+      // let allTrays =
+      //   myNewAr.Tray1 + myNewAr.Tray2 + myNewAr.Tray3 + myNewAr.Tray4;
 
-      if (
-        allTrays <= 5 &&
-        myNewAr.has_mode3 == 1 &&
-        myNewAr.mode3_status == 0 &&
-        myNewAr.tankLevel2 > 10
-      ) {
-        try {
-          myNewAr.mode3_status == 1
-          await models.FeedingDevices.update(
-            { mode3_status: 1},
-            { where: { id: myNewAr.id } }
-          );
-        } catch {
-          await models.FeedingDevices.update(
-            { mode3_status: 0 },
-            { where: { id: myNewAr.id } }
-          );
-        }
-      }
+      // if (
+      //   allTrays <= 5 &&
+      //   myNewAr.has_mode3 == 1 &&
+      //   myNewAr.mode3_status == 0 &&
+      //   myNewAr.tankLevel2 > 10
+      // ) {
+      //   try {
+      //     myNewAr.mode3_status == 1
+      //     await models.FeedingDevices.update(
+      //       { mode3_status: 1},
+      //       { where: { id: myNewAr.id } }
+      //     );
+      //   } catch {
+      //     await models.FeedingDevices.update(
+      //       { mode3_status: 0 },
+      //       { where: { id: myNewAr.id } }
+      //     );
+      //   }
+      // }
 
-      setTimeout(() => {
-        if (myNewAr.has_mode3 && myNewAr.mode3_status == 1) {
-          let topic = "ctrl/wtsensor";
-          let message = "0<hx711_get_params>0,1<" + myNewAr.feeder_id + ">1";
-          PublishCommand(topic, message);
-        }
-      }, 10000);
+      // setTimeout(() => {
+      //   if (myNewAr.has_mode3 && myNewAr.mode3_status == 1) {
+      //     let topic = "ctrl/wtsensor";
+      //     let message = "0<hx711_get_params>0,1<" + myNewAr.feeder_id + ">1";
+      //     PublishCommand(topic, message);
+      //   }
+      // }, 10000);
 
     //   setTimeout(async () => {
 
