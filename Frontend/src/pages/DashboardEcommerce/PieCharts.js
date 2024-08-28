@@ -1,7 +1,62 @@
 import React from "react";
 import ReactApexChart from "react-apexcharts";
+import ReactEcharts from "echarts-for-react";
 
 import getChartColorsArray from "../../Components/Common/ChartsDynamicColor";
+
+const SimplePie2 = ({ myData }) => {
+  //   const series = myData ? myData.values : [];
+
+  var option = {
+    title: {
+      text: "Deers Count",
+      left: "center",
+    },
+    tooltip: {
+      trigger: "item",
+    },
+    legend: {
+      orient: "vertical",
+      left: "left",
+    },
+    series: [
+      {
+        name: "Specie Count",
+        type: "pie",
+        radius: "70%",
+        data: myData
+          ? myData.values.map((value, index) => ({
+              value,
+              name: myData.labels[index],
+            }))
+          : [],
+        label: {
+          normal: {
+            show: true,
+            position: "inside",
+            formatter: "{d}%",
+            color: "#000",
+            fontSize: "14",
+            fontWeight: "bold",
+          },
+        },
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+          },
+        },
+      },
+    ],
+  };
+
+  return (
+    <React.Fragment>
+      <ReactEcharts style={{ height: "350px" }} option={option} />
+    </React.Fragment>
+  );
+};
 
 const SimplePie = ({ dataColors }) => {
   var chartPieBasicColors = getChartColorsArray(dataColors);
@@ -333,4 +388,5 @@ export {
   MonochromePie,
   GradientDonut,
   PatternedDonut,
+  SimplePie2,
 };
