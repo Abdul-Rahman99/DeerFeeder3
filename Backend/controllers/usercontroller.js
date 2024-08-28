@@ -1,5 +1,5 @@
 const models = require("../models");
-const { DataTypes, Op } = require("sequelize");
+const { DataTypes, Op, where } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -248,7 +248,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: "developer@dccme.ai",
       to: userEmail,
-      subject: "Password Reset Request for Deer.ae",
+      subject: "Password Reset Request for Mngar.ae",
       html: emailTemplate,
     };
 
@@ -398,6 +398,8 @@ const uploadProfilePicture = async (req, res) => {
         link_id: userId,
         file_path: originalFileName,
       });
+      let path = `${process.env.BASE_URL}/uploads/${originalFileName}`;
+      await models.Users.update({ avatar: path }, { where: { id: userId } });
 
       if (!req.file) {
         return res.status(400).send("No file uploaded.");
@@ -407,7 +409,7 @@ const uploadProfilePicture = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in uploadProfilePicture:", error);
-    res.status(500).send("Internal server error");
+    res.status(500).send(error.message);
   }
 };
 const getProfilePicture = async (req, res) => {
@@ -744,7 +746,7 @@ const getUserDevices = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -850,7 +852,7 @@ const assignDevice = async (req, res) => {
     console.error("Error assigning/unassigning role", error);
     return res
       .status(500)
-      .json({ status: false, message: "Internal server error", error: error });
+      .json({ status: false, message: error.message, error: error });
   }
 };
 
