@@ -51,6 +51,7 @@ import { SortingTable, DefaultTable } from "./ReactTable";
 import { ecomWidgets } from "../../common/data";
 import { OtherWidgetsCharts, MyPortfolioCharts } from "./WidgetsCharts";
 import { SimpleDonut } from "./PieCharts";
+
 const mapStyles = {
   width: "100%",
   height: "100%",
@@ -67,6 +68,7 @@ const DashboardEcommerce = (props) => {
   const [activeMarker, setActiveMarker] = useState(null);
 
   const [feedLevelData, setFeedLevelData] = useState([]);
+  const [feedLevelWtData, setFeedLevelWtData] = useState([]);
   const [notificationsData, setNotificationsData] = useState({});
 
   useEffect(() => {
@@ -74,11 +76,11 @@ const DashboardEcommerce = (props) => {
     socket = io.connect(api.SOCKET_API_URL);
     mySocketSystem();
     getFeedLevelData();
+    getFeedLevelWtData();
     // getSchedulesSummary()
 
     // console.log("Use Effect")
   }, []);
-
   // Start Socket Data
   const mySocketSystem = () => {
     socket.on("connect", () => {
@@ -106,6 +108,16 @@ const DashboardEcommerce = (props) => {
       .then((res) => {
         // console.log(res);
         setFeedLevelData(res);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const getFeedLevelWtData = () => {
+    axios
+      .get(api.API_URL + "/api/getFeedLevelWtData")
+      .then((res) => {
+        // console.log(res);
+        setFeedLevelWtData(res);
       })
       .catch((err) => console.log(err));
   };
@@ -158,7 +170,7 @@ const DashboardEcommerce = (props) => {
   function tog_notification() {
     setmodal_notification(!modal_notification);
   }
-  
+
   return (
     <React.Fragment>
       {/* Static Backdrop Modal */}
@@ -302,25 +314,30 @@ const DashboardEcommerce = (props) => {
 
                   <Col xl={6} md={6}>
                     <Card style={{ padding: "0" }}>
-        <CardBody>
-          <div className="d-flex align-items-center">
-            <div className="flex-grow-1 overflow-hidden">
-              <p className="text-uppercase mb-0">Devices Need Refill</p>
-            </div>
-          </div>
-          <div className="d-flex align-items-center justify-content-between">
-            <a href="#devicestable">
-              <div className="align-items-center">
-                <h6 className="fs-22 fw-semibold ff-secondary align-items-center">
-                  <span className="counter-value align-items-center" data-target="100">
-                    {feedLevelData.low_c}
-                  </span>
-                </h6>
-              </div>
-            </a>
-          </div>
-        </CardBody>
-      </Card>
+                      <CardBody>
+                        <div className="d-flex align-items-center">
+                          <div className="flex-grow-1 overflow-hidden">
+                            <p className="text-uppercase mb-0">
+                              Devices Need Refill
+                            </p>
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center justify-content-between">
+                          <a href="#devicestable">
+                            <div className="align-items-center">
+                              <h6 className="fs-22 fw-semibold ff-secondary align-items-center">
+                                <span
+                                  className="counter-value align-items-center"
+                                  data-target="100"
+                                >
+                                  {feedLevelData.low_c}
+                                </span>
+                              </h6>
+                            </div>
+                          </a>
+                        </div>
+                      </CardBody>
+                    </Card>
                   </Col>
                 </Row>
 
@@ -433,7 +450,7 @@ const DashboardEcommerce = (props) => {
                         <h4 className="card-title mb-0">Deers Feeders List</h4>
                       </CardHeader>
                       <CardBody>
-                        <SortingTable myData={feedLevelData.all} />
+                        <SortingTable myData={feedLevelWtData.all} />
                       </CardBody>
                     </Card>
                   </Col>

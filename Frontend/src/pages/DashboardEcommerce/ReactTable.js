@@ -466,22 +466,17 @@ const SortingTable = ({ pingDist, myData }) => {
           //const feedLevel = localStorage.getItem(`${cellProps?.id}-feedLevel`);
           //const formattedFeedLevel = feedLevel
           //  ? parseFloat(feedLevel).toFixed(2)
-           // : "";
-            let badgeColorClass = "";
-            if (cellProps.tankLevel <= 30) {
-              badgeColorClass = "danger";
-            } else if (cellProps.tankLevel <= 60) {
-              badgeColorClass = "warning";
-            } else {
-              badgeColorClass = "success";
-            }
+          // : "";
+          let badgeColorClass = "";
+          if (cellProps.tankLevel2 <= 50) {
+            badgeColorClass = "danger";
+          } else {
+            badgeColorClass = "success";
+          }
           return (
-            <span
-              className={
-                `badge badge-len bg-${badgeColorClass}`
-              }
-            >
-              {Math.max(0,cellProps.tankLevel.toFixed(2))}%
+            <span className={`badge badge-len bg-${badgeColorClass}`}>
+              {cellProps.tankLevel2.toFixed(2)}
+              {/* {Math.max(0, cellProps.tankLevel.toFixed(2))}% */}
             </span>
           );
         },
