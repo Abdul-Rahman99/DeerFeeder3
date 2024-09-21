@@ -468,7 +468,10 @@ const SortingTable = ({ pingDist, myData }) => {
           //  ? parseFloat(feedLevel).toFixed(2)
           // : "";
           let badgeColorClass = "";
-          if (cellProps.tankLevel2 <= 50) {
+          if (cellProps.tankLevel2 <= 0) {
+            cellProps.tankLevel2 = 0;
+            badgeColorClass = "danger";
+          } else if (cellProps.tankLevel2 <= 50) {
             badgeColorClass = "danger";
           } else {
             badgeColorClass = "success";
