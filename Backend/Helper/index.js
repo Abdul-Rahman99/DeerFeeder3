@@ -73,7 +73,6 @@ const collectSchedules = async (feeder_id, curday = "today") => {
   let moment_date;
   let dayName;
   if (curday == "today") {
-
     moment_date = moment().utcOffset(240).format("YYYY-MM-DD");
 
     dayName = moment().utcOffset(240).format("ddd");
@@ -138,7 +137,6 @@ const collectSchedules = async (feeder_id, curday = "today") => {
             feedtimesplited.map((val) => {
               StrTimings.push(val);
             });
-
           } else if (feed_schedule == "Sunrise") {
             console.log("sunrise in");
             if (feed_time_type == "before") {
@@ -240,7 +238,6 @@ const collectSchedules = async (feeder_id, curday = "today") => {
 };
 
 const ExecuteFeedingCommands = async (feeder_id = null, userId = null) => {
-
   let moment_date = moment().format("YYYY-MM-DD");
 
   let dayName = moment().format("ddd");
@@ -457,6 +454,93 @@ let HandleStopService = async (intFeederId, feederId, ToStop) => {
   await models.AuditLogs.create(AuditInsertion);
 };
 
+// getFeedLevelWtDataForEmailNotifications
+const getFeedLevelWtDataForEmailNotifications = async () => {
+  // select all the feeding devices with low feed level
+  const devicesQuery = ` SELECT id, feeder_id, title ,feed_level_percentage, feed_level2, other_info FROM FeedingDevices WHERE feed_level_percentage <= 30 OR feed_level2 <= 50`;
+
+  const devices = await models.sequelize.query(devicesQuery, {
+    type: QueryTypes.SELECT,
+  });
+
+  try {
+    for (let i = 0; i < devices.length; i++) {
+      const {
+        id,
+        feeder_id,
+        title,
+        feed_level_percentage,
+        feed_level2,
+        other_info,
+      } = devices[i];
+
+      // get the users related to the device
+      const query = `
+        SELECT 
+          UserDevices.user_id,
+          UserDevices.feeder_id
+        FROM 
+          UserDevices 
+          INNER JOIN FeedingDevices ON UserDevices.feeder_id = FeedingDevices.id
+        WHERE UserDevices.feeder_id = ${id}
+      `;
+
+      const records = await models.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      // send email to the users with low feed level notification for device
+      for (let j = 0; j < records.length; j++) {
+        const { user_id } = records[j];
+        const user = await models.Users.findOne({ where: { id: user_id } });
+        if (user) {
+          const { email } = user;
+
+          // send email to the users with low feed level notification for device
+
+          const { latitude, longitude } = JSON.parse(other_info);
+
+          // Create the email template
+
+          const emailTemplate = `
+                  <p>Hello, <strong>${user.username}</strong></p>
+                  <p>Your Deer Feeder Device <strong>[${title}]</strong> tank level is low.</p>
+                  <a href="https://maps.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed"> <strong>Click here </strong></a>
+                  <p>If you didn't recognize this, please ignore this email.</p>
+                `;
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: {
+              user: "developer@dccme.ai", // replace this with developer@dccme.ai
+              pass: "yfen ping pjfh emkp", // replace this with google app password
+            },
+          });
+          const mailOptions = {
+            from: "developer@dccme.ai",
+            to: email,
+            subject: `Low Feed Level For Bird Feeder Device ${title}`,
+            html: emailTemplate,
+          };
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.log("Error sending email:", error);
+            } else {
+              console.log("Email sent:", info.response);
+            }
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.log("errorNotification", error.message);
+  }
+
+  return 0;
+};
+
 const getFeedLevelWtData = async () => {
   const query = `
     SELECT 
@@ -564,27 +648,27 @@ const getFeedLevelWtData = async () => {
       //   }
       // }, 10000);
 
-    //   setTimeout(async () => {
+      //   setTimeout(async () => {
 
-    //     if (
-    //       (myNewAr.Tray1 >= 15 || myNewAr.Tray2 >= 15 || myNewAr.Tray3 >= 15 || myNewAr.Tray4 >= 15) &&
-    //       myNewAr.mode3_status == 1
-    //     ) {
-    //       // ExecuteFeedingStopCommands(id, 0, 11);
-    //       await models.FeedingDevices.update(
-    //         { mode3_status: 0 },
-    //         { where: { id: myNewAr.id } }
-    //       );
-    //     } else {
-    //       if(myNewAr.mode3_status == 1 && myNewAr.has_mode3 == 1){
-            
-    //         ExecuteFeedNowWT({
-    //           params: { userId: 11, feederId: myNewAr.id },
-    //           body: { quantity: 10 },
-    //         });
-    //       }
-    //     }
-    //   }, 1000);
+      //     if (
+      //       (myNewAr.Tray1 >= 15 || myNewAr.Tray2 >= 15 || myNewAr.Tray3 >= 15 || myNewAr.Tray4 >= 15) &&
+      //       myNewAr.mode3_status == 1
+      //     ) {
+      //       // ExecuteFeedingStopCommands(id, 0, 11);
+      //       await models.FeedingDevices.update(
+      //         { mode3_status: 0 },
+      //         { where: { id: myNewAr.id } }
+      //       );
+      //     } else {
+      //       if(myNewAr.mode3_status == 1 && myNewAr.has_mode3 == 1){
+
+      //         ExecuteFeedNowWT({
+      //           params: { userId: 11, feederId: myNewAr.id },
+      //           body: { quantity: 10 },
+      //         });
+      //       }
+      //     }
+      //   }, 1000);
 
       if (tankLevel <= 30) {
         LowFeedLevels.push(id);
@@ -596,10 +680,15 @@ const getFeedLevelWtData = async () => {
       all_c: AllFeedLevels.length,
       low_c: LowFeedLevels.length,
     };
-
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
   }
 };
 
-module.exports = { ExecuteFeedingCommands, collectSchedules, getFeedDones,getFeedLevelWtData };
+module.exports = {
+  ExecuteFeedingCommands,
+  collectSchedules,
+  getFeedDones,
+  getFeedLevelWtData,
+  getFeedLevelWtDataForEmailNotifications,
+};
