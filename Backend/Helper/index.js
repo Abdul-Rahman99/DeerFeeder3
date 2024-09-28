@@ -505,7 +505,7 @@ const getFeedLevelWtDataForEmailNotifications = async () => {
           const emailTemplate = `
                   <p>Hello, <strong>${user.username}</strong></p>
                   <p>Your Deer Feeder Device <strong>[${title}]</strong> tank level is low.</p>
-                  <a href="https://maps.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed"> <strong>Click here </strong></a>
+                  <a href="https://maps.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed"> <strong>Device Location</strong></a>
                   <p>If you didn't recognize this, please ignore this email.</p>
                 `;
           const transporter = nodemailer.createTransport({
