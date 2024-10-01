@@ -67,6 +67,8 @@ const sendRefillNotification = async (feederData) => {
       }
       console.log("email sent to user", user_id);
     }
+
+    return 1;
   } catch (error) {
     console.log("errorNotification", error.message);
   }

@@ -201,12 +201,21 @@ client.on("message", async function (topic, message) {
       const matc21 = msgStr.match(/21<([^>]*)>21/);
       const match60 = msgStr.match(/60<([^>]*)>60/);
 
+      let feederData;
       if (match2) {
         const value = match2[1];
         const [val1, val2, val3, val4, val5, val6, val7, val8] = value
           .split(",")
           .map(Number);
+        try {
+          feederData = await models.FeedingDevices.findOne({
+            where: { feeder_id: feeder_id },
+          });
 
+          beforeFeed = feederData.dataValues.feed_level2;
+        } catch (error) {
+          console.error("Error fetching feeder data:", error);
+        }
         try {
           await models.FeedingDevices.update(
             {
@@ -219,17 +228,13 @@ client.on("message", async function (topic, message) {
             { where: { feeder_id: feeder_id } }
           );
 
-          const feederData = await models.FeedingDevices.findOne({
-            where: { id: feeder_id },
-          });
-
           // if (!feederData) {
           //   console.error(`Feeder ${feeder_id} not found`);
           //   return;
           // }
 
           let now = new Date();
-          if (feederData.dataValues.feed_level2 - beforeFeed >= 20) {
+          if (val5 + val6 + val7 + val8 - beforeFeed >= 20) {
             // console.log(
             //   `Feeder ${feeder_id} feed level 2 increased to ${
             //     val5 + val6 + val7 + val8
@@ -238,9 +243,9 @@ client.on("message", async function (topic, message) {
 
             await sendRefillNotification(feederData.dataValues);
           }
-          beforeFeed = feederData.dataValues.feed_level2;
 
           console.log("FeedingDevices updated successfully.");
+          return;
         } catch (error) {
           console.error("Error updating FeedingDevices:", error);
         }
