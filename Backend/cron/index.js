@@ -3,7 +3,7 @@ const { DataTypes, Op, QueryTypes } = require("sequelize");
 var moment = require("moment");
 const {
   ExecuteFeedingCommands,
-  getFeedLevelWtDataForEmailNotifications,
+  lowFeedEmailNotifications,
 } = require("../Helper");
 var { io, postSocketNotification } = require("../socket");
 const cron = require("node-cron");
@@ -267,7 +267,7 @@ const runPurgeCommand = () => {
 };
 const runNotificationCommand = () => {
   // run daily at 8 am to purge old camera data
-  cron.schedule("01 08 * * *", getFeedLevelWtDataForEmailNotifications);
+  cron.schedule("17 10 * * *", lowFeedEmailNotifications);
 
   // run daily at 12 noon to purge old camera data
   cron.schedule("*/10 * * * *", NotificationCommand);

@@ -1,5 +1,6 @@
 const moment = require("moment");
 const models = require("../models");
+const nodemailer = require("nodemailer");
 const { client, PublishCommand } = require("../mqtt");
 const { exit } = require("process");
 const {
@@ -454,10 +455,10 @@ let HandleStopService = async (intFeederId, feederId, ToStop) => {
   await models.AuditLogs.create(AuditInsertion);
 };
 
-// getFeedLevelWtDataForEmailNotifications
-const getFeedLevelWtDataForEmailNotifications = async () => {
+// lowFeedEmailNotifications
+const lowFeedEmailNotifications = async () => {
   // select all the feeding devices with low feed level
-  const devicesQuery = ` SELECT id, feeder_id, title ,feed_level_percentage, feed_level2, other_info FROM FeedingDevices WHERE feed_level_percentage <= 30 OR feed_level2 <= 50`;
+  const devicesQuery = ` SELECT id, title ,feed_level_percentage, feed_level2, other_info, has_capacity, location FROM FeedingDevices`;
 
   const devices = await models.sequelize.query(devicesQuery, {
     type: QueryTypes.SELECT,
@@ -465,72 +466,70 @@ const getFeedLevelWtDataForEmailNotifications = async () => {
 
   try {
     for (let i = 0; i < devices.length; i++) {
-      const {
-        id,
-        feeder_id,
-        title,
-        feed_level_percentage,
-        feed_level2,
-        other_info,
-      } = devices[i];
+      const { id, title, feed_level2, other_info, location } = devices[i];
 
-      // get the users related to the device
-      const query = `
-        SELECT 
-          UserDevices.user_id,
-          UserDevices.feeder_id
-        FROM 
-          UserDevices 
-          INNER JOIN FeedingDevices ON UserDevices.feeder_id = FeedingDevices.id
-        WHERE UserDevices.feeder_id = ${id}
-      `;
+      if (feed_level2 <= 50) {
+        // get the users related to the device
+        const query = `
+          SELECT 
+            UserDevices.user_id,
+            UserDevices.feeder_id
+          FROM 
+            UserDevices 
+            INNER JOIN FeedingDevices ON UserDevices.feeder_id = FeedingDevices.id
+          WHERE UserDevices.feeder_id = ${id}
+        `;
 
-      const records = await models.sequelize.query(query, {
-        type: QueryTypes.SELECT,
-      });
+        const records = await models.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
 
-      // send email to the users with low feed level notification for device
-      for (let j = 0; j < records.length; j++) {
-        const { user_id } = records[j];
-        const user = await models.Users.findOne({ where: { id: user_id } });
-        if (user) {
-          const { email } = user;
+        // send email to the users with low feed level notification for device
+        for (let j = 0; j < records.length; j++) {
+          const { user_id } = records[j];
+          const user = await models.Users.findOne({ where: { id: user_id } });
+          if (user) {
+            const { email } = user;
 
-          // send email to the users with low feed level notification for device
+            // send email to the users with low feed level notification for device
 
-          const { latitude, longitude } = JSON.parse(other_info);
+            const { latitude, longitude } = JSON.parse(other_info);
 
-          // Create the email template
+            // Create the email template
 
-          const emailTemplate = `
-                  <p>Hello, <strong>${user.username}</strong></p>
-                  <p>Your Deer Feeder Device <strong>[${title}]</strong> tank level is low.</p>
-                  <a href="https://maps.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed"> <strong>Device Location</strong></a>
-                  <p>If you didn't recognize this, please ignore this email.</p>
-                `;
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            auth: {
-              user: "developer@dccme.ai", // replace this with developer@dccme.ai
-              pass: "yfen ping pjfh emkp", // replace this with google app password
-            },
-          });
-          const mailOptions = {
-            from: "developer@dccme.ai",
-            to: email,
-            subject: `Low Feed Level For Bird Feeder Device ${title}`,
-            html: emailTemplate,
-          };
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.log("Error sending email:", error);
-            } else {
-              console.log("Email sent:", info.response);
-            }
-          });
+            const emailTemplate = `
+                    <h1>Dear <strong>${user.username}</strong>, </h1>
+                    <p>We wanted to notify you that the <strong>${title}</strong> located at <strong>${location}</strong> is running low on feed. There are approximately <strong>${feed_level2}</strong> KG of feed left.</p>
+                    <p>You can check the location of the feeder by following this link.</p>
+                    <a href="https://maps.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed"> <strong>Device Location</strong></a>
+                    <p>Please refill the feeder soon to ensure it continues to operate smoothly.</p>
+                    <p>Best Regards,</p>
+                    <p><strong>Smart DCC Team</strong></p>
+                  `;
+            const transporter = nodemailer.createTransport({
+              service: "gmail",
+              host: "smtp.gmail.com",
+              port: 587,
+              secure: false,
+              auth: {
+                user: "developer@dccme.ai", // replace this with developer@dccme.ai
+                pass: "yfen ping pjfh emkp", // replace this with google app password
+              },
+            });
+            const mailOptions = {
+              from: "Smart DCC <info@dccme.ai>",
+              to: email,
+              subject: `Alert: Your Feeder Is Running Low on Feed ${title}`,
+              html: emailTemplate,
+            };
+            transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                console.log("Error sending email:", error);
+              } else {
+                console.log("Email sent:", info.response);
+              }
+            });
+          }
         }
       }
     }
@@ -690,5 +689,5 @@ module.exports = {
   collectSchedules,
   getFeedDones,
   getFeedLevelWtData,
-  getFeedLevelWtDataForEmailNotifications,
+  lowFeedEmailNotifications,
 };

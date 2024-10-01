@@ -16,7 +16,8 @@ const fs = require("fs");
 const sharp = require("sharp");
 const { exit } = require("process");
 const { skip } = require("node:test");
-
+const { sendRefillNotification } = require("./notificationscontroller");
+let beforeFeed;
 var isProcessing = false;
 const ProcessCameraData = (topic, message) => {
   return new Promise((resolve, reject) => {
@@ -155,8 +156,9 @@ client.on("connect", function () {
       );
       console.log("Topics:", topics);
       myTopics = topics;
+      // myTopics = ["BF/abdo2/wtsensor/status"];
 
-      client.subscribe(topics, function (err) {
+      client.subscribe(myTopics, function (err) {
         if (!err) {
           console.log(`Subscribed to topics: ${topics}`);
         } else {
@@ -216,6 +218,28 @@ client.on("message", async function (topic, message) {
             },
             { where: { feeder_id: feeder_id } }
           );
+
+          const feederData = await models.FeedingDevices.findOne({
+            where: { id: feeder_id },
+          });
+
+          // if (!feederData) {
+          //   console.error(`Feeder ${feeder_id} not found`);
+          //   return;
+          // }
+
+          let now = new Date();
+          if (feederData.dataValues.feed_level2 - beforeFeed >= 20) {
+            // console.log(
+            //   `Feeder ${feeder_id} feed level 2 increased to ${
+            //     val5 + val6 + val7 + val8
+            //   } at ${now.toLocaleString()}`
+            // );
+
+            await sendRefillNotification(feederData.dataValues);
+          }
+          beforeFeed = feederData.dataValues.feed_level2;
+
           console.log("FeedingDevices updated successfully.");
         } catch (error) {
           console.error("Error updating FeedingDevices:", error);
@@ -558,6 +582,7 @@ client.on("message", async function (topic, message) {
                 const newFeedLevelPercentage =
                   (newFeedLevel / results[0].tank_capacity) * 100;
                 let updateQuery = `UPDATE FeedingDevices SET feed_level = ${newFeedLevel}, feed_level_percentage = ${newFeedLevelPercentage} WHERE id = ${results[0].id}`;
+
                 models.sequelize.query(updateQuery);
               })
               .catch((error) => {

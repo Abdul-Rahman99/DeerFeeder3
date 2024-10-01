@@ -451,7 +451,7 @@ const getFeedLevelWtData = async (req, res) => {
       // (myNewAr.Tray2).toFixed(1)
       // (myNewAr.Tray3).toFixed(1)
       // (myNewAr.Tray4).toFixed(1)
-      // (myNewAr.tankLevel2).toFixed(1)
+      // console.log(myNewAr.tankLevel2 , "ASD").toFixed(1)
 
 
 
