@@ -267,7 +267,7 @@ const runPurgeCommand = () => {
 };
 const runNotificationCommand = () => {
   // run daily at 8 am to purge old camera data
-  cron.schedule("17 10 * * *", lowFeedEmailNotifications);
+  cron.schedule("01 08 * * *", lowFeedEmailNotifications);
 
   // run daily at 12 noon to purge old camera data
   cron.schedule("*/10 * * * *", NotificationCommand);
